@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>vn.com.viettel</groupId>
-    <artifactId>gen-code</artifactId>
+    <artifactId>vts-kit-backend-gencode</artifactId>
     <version>1.0-RELEASE</version>
-    <name>gen-code</name>
-    <description>Demo project for Spring Boot</description>
+    <name>vts-kit-backend-gencode</name>
+    <description>VTS KIT GEN CODE</description>
     <properties>
         <java.version>11</java.version>
         <mariadb.version>3.0.6</mariadb.version>
