@@ -78,8 +78,10 @@ public class GenDTO {
         strContentCodeAction.append("import com.fasterxml.jackson.annotation.JsonInclude;").append("\r");
         strContentCodeAction.append("import com.fasterxml.jackson.annotation.JsonInclude.Include;").append("\r");
         strContentCodeAction.append("import java.util.Date;").append("\r");
+        strContentCodeAction.append("import lombok.AccessLevel;").append("\r");
         strContentCodeAction.append("import lombok.Data;").append("\r");
-        strContentCodeAction.append("import lombok.NoArgsConstructor;").append("\r\r");
+        strContentCodeAction.append("import lombok.NoArgsConstructor;").append("\r");
+        strContentCodeAction.append("import lombok.experimental.FieldDefaults;").append("\r\r");
 
         //thuc hien gen comment
         strContentCodeAction.append("/**").append("\r");
@@ -93,6 +95,7 @@ public class GenDTO {
         strContentCodeAction.append("@Data").append("\r");
         strContentCodeAction.append("@NoArgsConstructor").append("\r");
         strContentCodeAction.append("@JsonInclude(Include.NON_NULL)").append("\r");
+        strContentCodeAction.append("@FieldDefaults(level = AccessLevel.PRIVATE)").append("\r");
         strContentCodeAction.append("public class ").append(strClassDTO).append(" {").append("\r");
         strContentCodeAction.append(getParamsFromQuery(itemObject));
 

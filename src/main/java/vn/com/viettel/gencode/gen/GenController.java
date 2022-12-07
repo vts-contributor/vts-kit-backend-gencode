@@ -104,24 +104,29 @@ public class GenController {
         strContentCodeAction.append("public class ").append(strClassController).append(" {").append("\r");
 
         //thuc hien gen method trong khai bao
-        itemObject.getListMethod().forEach((method) -> {
+        boolean isFirst = true;
+        for (MethodEntity method : itemObject.getListMethod()) {
             if (method.getJpa() != null && method.getJpa()) {
                 if (listTableName != null && !listTableName.isEmpty()) {
                     for (String varTableName : listTableName) {
                         String strClassServiceJPA = FunctionCommon.camelcasify(Character.toUpperCase(varTableName.charAt(0)) + varTableName.substring(1)) + "ServiceJPA";
-//                        strContentCodeAction.append("    @Autowired ").append("\r");
                         String variableServiceJPA = Character.toLowerCase(strClassServiceJPA.charAt(0)) + strClassServiceJPA.substring(1);
-                        strContentCodeAction.append("    private final ").append(strClassServiceJPA).append(" ").append(variableServiceJPA).append(";\r");
+                        if (isFirst) {
+                            strContentCodeAction.append("    private final ").append(strClassServiceJPA).append(" ").append(variableServiceJPA).append(";\r");
+                            isFirst = false;
+                        }
                         strContentCodeAction.append(generateFunctionController(strClassDTO, strClassServiceJPA, method));
                     }
                 }
             } else {
-//                strContentCodeAction.append("    @Autowired ").append("\r");
                 String variableService = Character.toLowerCase(strClassService.charAt(0)) + strClassService.substring(1);
-                strContentCodeAction.append("    private final ").append(strClassService).append(" ").append(variableService).append(";\r");
+                if (isFirst) {
+                    strContentCodeAction.append("    private final ").append(strClassService).append(" ").append(variableService).append(";\r");
+                    isFirst = false;
+                }
                 strContentCodeAction.append(generateFunctionController(strClassDTO, strClassService, method));
             }
-        });
+        }
         strContentCodeAction.append("\n}");
         return strContentCodeAction;
     }
@@ -152,24 +157,15 @@ public class GenController {
         }
         List<String> listParams;
         StringBuilder strParams = new StringBuilder();
-        StringBuilder strParamsMethod = new StringBuilder();
         if (strMethodName.getValue() != null && strMethodName.getValue().trim().length() > 0) {
             listParams = FunctionCommon.getListParamsFromUrl(strMethodName.getValue());
-            boolean first = true;
             for (String itemParams : listParams) {
                 if (itemParams != null && itemParams.trim().length() > 0) {
-                    if (!first) {
-                        strParams.append(",");
-                        strParamsMethod.append(",");
-                    }
                     if (itemParams.toLowerCase().endsWith("id")) {
-                        strParams.append("@PathVariable Long ").append(itemParams);
-                        strParamsMethod.append(itemParams);
+                        strParams.append("@PathVariable Integer ").append(itemParams);
                     } else {
                         strParams.append("@PathVariable String ").append(itemParams);
-                        strParamsMethod.append(itemParams);
                     }
-                    first = false;
                 }
             }
         }
@@ -266,10 +262,16 @@ public class GenController {
         strContentCodeAction.append("        */").append("\r");
 
         //khai bao class service de goi
-        strContentCodeAction.append("        ").append("Object result = ").append(variableService).append(".").append(strMethodName.getName()).append("(").append(strVariableClassDTO);
-        if (strParamsMethod.toString().trim().length() > 0) {
-            strContentCodeAction.append(",").append(strParamsMethod);
+        if (strMethodName.getValue() != null && strMethodName.getValue().trim().length() > 0) {
+            listParams = FunctionCommon.getListParamsFromUrl(strMethodName.getValue());
+            for (String itemParams : listParams) {
+                if (itemParams != null && itemParams.trim().length() > 0) {
+                    String nameParam = Character.toUpperCase(itemParams.charAt(0)) + itemParams.substring(1);
+                    strContentCodeAction.append("        ").append(strVariableClassDTO).append(".set").append(nameParam).append("(").append(itemParams).append(");\r");
+                }
+            }
         }
+        strContentCodeAction.append("        ").append("Object result = ").append(variableService).append(".").append(strMethodName.getName()).append("(").append(strVariableClassDTO);
         strContentCodeAction.append(");").append("\r");
         strContentCodeAction.append("        return ").append("ResponseUtils.getResponseEntity(result);").append("\r");
         strContentCodeAction.append("    }");

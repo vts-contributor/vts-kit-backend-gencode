@@ -91,7 +91,6 @@ public class GenServiceImpl {
         strContentCodeAction.append("@Service").append("\r");
         strContentCodeAction.append("@AllArgsConstructor").append("\r");
         strContentCodeAction.append("public class ").append(strClassServiceImpl).append(" implements ").append(strClassService).append(" {\r\r");
-//        strContentCodeAction.append("    @Autowired ").append("\r");
         String variableRepository = Character.toLowerCase(strClassRepository.charAt(0)) + strClassRepository.substring(1);
         strContentCodeAction.append("    private final ").append(strClassRepository).append(" ").append(variableRepository).append(";\r");
         //thuc hien gen method trong khai bao
@@ -126,31 +125,9 @@ public class GenServiceImpl {
         strContentCodeAction.append("     * @return ").append("\r");
         strContentCodeAction.append("     */").append("\r");
 
-        StringBuilder strParamsMethod = new StringBuilder();
-        if (method.getValue() != null && method.getValue().trim().length() > 0) {
-            List<String> listParams = FunctionCommon.getListParamsFromUrl(method.getValue());
-            boolean first = true;
-            for (String itemParams : listParams) {
-                if (itemParams != null && itemParams.trim().length() > 0) {
-                    if (!first) {
-                        strParamsMethod.append(",");
-                    }
-                    if (itemParams.toLowerCase().endsWith("id")) {
-                        strParamsMethod.append(" Long ").append(itemParams);
-                    } else {
-                        strParamsMethod.append(" String ").append(itemParams);
-                    }
-                    first = false;
-                }
-            }
-        }
         //noi dung phuong thuc
         strContentCodeAction.append("    @Override").append("\r");
-        strContentCodeAction.append("    public Object ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO);
-        if (strParamsMethod.toString().trim().length() > 0) {
-            strContentCodeAction.append(",").append(strParamsMethod);
-        }
-        strContentCodeAction.append(") {").append("\r");
+        strContentCodeAction.append("    public Object ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO).append(") {").append("\r");
 
         //gen comment code lay params
         strContentCodeAction.append("        /*").append("\r");

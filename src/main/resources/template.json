@@ -1,14 +1,24 @@
 {
-  "className": "Employees",
-  "desc": "Lớp thao tác danh sach nhan vien",
+  "className": "Products",
+  "desc": "Lớp thao tác danh sach mat hang",
   "listMethod": [
     {
       "type": "get",
-      "name": "getEmployees",
-      "value": "/v1/employees",
-      "sql": "SELECT * FROM HR_EMPLOYEES WHERE (:employeeId is null or EMPLOYEE_ID = :employeeId ) AND (:fullName is null or FULL_NAME LIKE %:fullName%)",
-      "params":["employeeId","fullName"],
-      "desc": "Lay du thong tin nhan vien",
+      "name": "getProducts",
+      "value": "/v1/products",
+      "sql": "SELECT * FROM products_tbl WHERE (:productId is null or PRODUCT_ID = :productId ) AND (:productName is null or PRODUCT_NAME LIKE %:productName%)",
+      "params":["productId","productName"],
+      "desc": "Lay du thong tin",
+      "count": 1,
+      "jpa": true
+    },
+    {
+      "type": "put",
+      "name": "updateProducts",
+      "value": "/v1/products/{productId}",
+      "sql": "update products_tbl set PRODUCT_ID = :productId WHERE (:productId is null or PRODUCT_ID = :productId ) AND (:productName is null or PRODUCT_NAME LIKE %:productName%)",
+      "params":["productName"],
+      "desc": "Cap nhat thong tin",
       "count": 1,
       "jpa": true
     }

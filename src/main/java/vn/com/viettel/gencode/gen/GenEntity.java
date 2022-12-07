@@ -100,8 +100,10 @@ public class GenEntity {
         strContentCodeAction.append("import java.io.Serializable;").append("\r");
         strContentCodeAction.append("import javax.persistence.*;").append("\r");
         strContentCodeAction.append("import javax.validation.constraints.NotNull;").append("\r");
+        strContentCodeAction.append("import lombok.AccessLevel;").append("\r");
         strContentCodeAction.append("import lombok.Data;").append("\r");
         strContentCodeAction.append("import lombok.NoArgsConstructor;").append("\r");
+        strContentCodeAction.append("import lombok.experimental.FieldDefaults;").append("\r");
         strContentCodeAction.append("import java.sql.*;").append("\r\r");
 
         //thuc hien gen comment
@@ -116,6 +118,7 @@ public class GenEntity {
         String strClassEntityCamel = FunctionCommon.camelcasify(stringTableName);
         strContentCodeAction.append("@Data").append("\r");
         strContentCodeAction.append("@NoArgsConstructor").append("\r");
+        strContentCodeAction.append("@FieldDefaults(level = AccessLevel.PRIVATE)").append("\r");
         strContentCodeAction.append("@Entity").append("\r");
         strContentCodeAction.append("@Table(name = \"").append(stringTableName.toUpperCase()).append("\")").append("\r");
         strContentCodeAction.append("public class ").append(strClassEntityCamel).append("Entity implements Serializable {").append("\r");

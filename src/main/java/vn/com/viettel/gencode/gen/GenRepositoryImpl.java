@@ -232,8 +232,8 @@ public class GenRepositoryImpl {
         itemObject.getListMethod().forEach((method) -> {
             String strMethodName = " " + method.getName().toLowerCase() + "(";
             String strMethodName1 = " " + method.getName().toLowerCase() + " (";
-            String strContenFile = strContentCodeAction.toString().replaceAll("\\s{2,}", " ").toLowerCase();
-            if (!strContenFile.contains(strMethodName) && !strContenFile.contains(strMethodName1)) {
+            String strContentFile = strContentCodeAction.toString().replaceAll("\\s{2,}", " ").toLowerCase();
+            if (!strContentFile.contains(strMethodName) && !strContentFile.contains(strMethodName1)) {
                 System.out.println("method= " + method.getName());
                 //Neu khong co phuong thuc trong class thi add them phuong thuc
                 strContentCodeAction.append(generateFunctionRepositoryImpl(itemObject, method)).append("\r");

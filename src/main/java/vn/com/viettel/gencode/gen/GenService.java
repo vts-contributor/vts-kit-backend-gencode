@@ -100,38 +100,13 @@ public class GenService {
      * @return
      */
     private static StringBuilder generateFunctionService(ObjectEntity itemObject, MethodEntity method) {
-
-        List<String> listParams;
         StringBuilder strParamsMethod = new StringBuilder();
-        if (method.getValue() != null && method.getValue().trim().length() > 0) {
-            listParams = FunctionCommon.getListParamsFromUrl(method.getValue());
-            boolean first = true;
-            for (String itemParams : listParams) {
-                if (itemParams != null && itemParams.trim().length() > 0) {
-                    if (!first) {
-                        strParamsMethod.append(",");
-                    }
-                    if (itemParams.toLowerCase().endsWith("id")) {
-                        strParamsMethod.append(" Long ").append(itemParams);
-                    } else {
-                        strParamsMethod.append(" String ").append(itemParams);
-                    }
-                    first = false;
-                }
-            }
-        }
-
-
         String strClassDTO = itemObject.getClassName() + "DTO";
         String strVariableClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
         StringBuilder strContentCodeAction = new StringBuilder();
         //noi dung phuong thuc
         strContentCodeAction.append("    \r");
-        strContentCodeAction.append("    Object ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO);
-        if (strParamsMethod.toString().trim().length() > 0) {
-            strContentCodeAction.append(",").append(strParamsMethod);
-        }
-        strContentCodeAction.append(");");
+        strContentCodeAction.append("    Object ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO).append(");");
         return strContentCodeAction;
     }
 

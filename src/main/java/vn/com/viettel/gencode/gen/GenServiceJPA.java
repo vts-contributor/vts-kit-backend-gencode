@@ -170,67 +170,31 @@ public class GenServiceJPA {
      */
     private static StringBuilder generateServiceJPA(List<VariableEntity> variableEntities, MethodEntity method, String strClassDTO, String strClassEntity, String strTableNameCamel) {
         StringBuilder strContentCodeAction = new StringBuilder();
-        StringBuilder strParamsMethod = new StringBuilder();
-        if (method.getValue() != null && method.getValue().trim().length() > 0) {
-            List<String> listParams = FunctionCommon.getListParamsFromUrl(method.getValue());
-            boolean first = true;
-            for (String itemParams : listParams) {
-                if (itemParams != null && itemParams.trim().length() > 0) {
-                    if (!first) {
-                        strParamsMethod.append(",");
-                    }
-                    if (itemParams.toLowerCase().endsWith("id")) {
-                        strParamsMethod.append(" Long ").append(itemParams);
-                    } else {
-                        strParamsMethod.append(" String ").append(itemParams);
-                    }
-                    first = false;
+        String varClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
+        if (method.getSql() != null && method.getSql().trim().length() > 0) {
+            String sqlCommand = method.getSql().toLowerCase().trim().replaceAll("( )+", " ");
+            if (sqlCommand.startsWith("insert into") || sqlCommand.startsWith("update") || sqlCommand.startsWith("delete")) {
+                strContentCodeAction.append("    public int ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(varClassDTO).append(") {").append("\r");
+                strContentCodeAction.append("        return ").append(strTableNameCamel).append(".").append(method.getName()).append("(").append(varClassDTO).append(");\r");
+                strContentCodeAction.append("    }").append("\r\r");
+            } else {
+                strContentCodeAction.append("    public Object ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(varClassDTO).append(") {").append("\r");
+                strContentCodeAction.append("        Pageable pageable;\r");
+                strContentCodeAction.append("        if (").append(varClassDTO).append(".getStartRecord() != null && ").append(varClassDTO).append(".getPageSize() != null) {\r");
+                strContentCodeAction.append("           pageable = PageRequest.of(").append(varClassDTO).append(".getStartRecord() / ")
+                        .append(varClassDTO).append(".getPageSize(), ").append(varClassDTO).append(".getPageSize());\r");
+                strContentCodeAction.append("        } else {\r");
+                strContentCodeAction.append("           pageable = PageRequest.of (0, 10);\r");
+                strContentCodeAction.append("        }\r");
+                strContentCodeAction.append("        Page<").append(strClassEntity).append("> page = ").append(strTableNameCamel).append(".").append(method.getName()).append("(").append(varClassDTO).append(", pageable);").append("\r");
+                if (method.getCount() != null && method.getCount() == 1) {
+                    strContentCodeAction.append("        return new BaseResultSelect(page.getContent(), page.getTotalElements());\r");
+                } else {
+                    strContentCodeAction.append("        return page.getContent();\r");
                 }
+                strContentCodeAction.append("    }").append("\r\r");
             }
         }
-        String varClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
-        strContentCodeAction.append("    public Object ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(varClassDTO);
-//        if (method.getParams() != null) {
-//            method.getParams().forEach((param) -> {
-//                VariableEntity variableEntity = variableEntities.stream().filter(variable -> param.equalsIgnoreCase(variable.getColumnName())).findAny().orElse(null);
-//                if (variableEntity != null) {
-//                    strContentCodeAction.append(", ").append(variableEntity.getTypeVariable()).append(" ").append(variableEntity.getColumnName());
-//                } else {
-//                    strContentCodeAction.append(", ").append("String ").append(param);
-//                }
-//            });
-//        }
-        if (strParamsMethod.toString().trim().length() > 0) {
-            strContentCodeAction.append(", ").append(strParamsMethod);
-        }
-        strContentCodeAction.append(") {").append("\r");
-        strContentCodeAction.append("        Pageable pageable;\r");
-        strContentCodeAction.append("        if (").append(varClassDTO).append(".getStartRecord() != null && ").append(varClassDTO).append(".getPageSize() != null) {\r");
-        strContentCodeAction.append("           pageable = PageRequest.of(").append(varClassDTO).append(".getStartRecord() / ")
-                .append(varClassDTO).append(".getPageSize(), ").append(varClassDTO).append(".getPageSize());\r");
-        strContentCodeAction.append("        } else {\r");
-        strContentCodeAction.append("           pageable = PageRequest.of (0, 10);\r");
-        strContentCodeAction.append("        }\r");
-
-//        StringBuilder strParams = new StringBuilder();
-//        if (method.getParams() != null) {
-//            method.getParams().forEach((param) -> {
-//                VariableEntity variableEntity = variableEntities.stream().filter(variable -> param.equalsIgnoreCase(variable.getColumnName())).findAny().orElse(null);
-//                if (variableEntity != null) {
-//                    strParams.append(variableEntity.getColumnName()).append(", ");
-//                } else {
-//                    strParams.append(param).append(", ");
-//                }
-//            });
-//        }
-        strContentCodeAction.append("        Page<").append(strClassEntity).append("> page = ").append(strTableNameCamel).append(".").append(method.getName())
-                .append("(").append(varClassDTO).append(", pageable);").append("\r");
-        if (method.getCount() != null && method.getCount() == 1) {
-            strContentCodeAction.append("        return new BaseResultSelect(page.getContent(), page.getTotalElements());\r");
-        } else {
-            strContentCodeAction.append("        return page.getContent();\r");
-        }
-        strContentCodeAction.append("    }").append("\r\r");
         return strContentCodeAction;
     }
 }
