@@ -87,7 +87,7 @@ public class GenServiceJPA {
         // File ServiceJPA
         //==============chen header import======================================
         strContentCodeAction.append("package vn.com.viettel.services.jpa;").append("\r\r");
-        strContentCodeAction.append("import vn.com.viettel.core.dto.response.BaseResultSelect;\r");
+        strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;\r");
         strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
         strContentCodeAction.append("import vn.com.viettel.entities.").append(strClassEntity).append(";\r");
         strContentCodeAction.append("import vn.com.viettel.repositories.jpa.").append(strClassRepository).append(";\r");

@@ -82,7 +82,7 @@ public class GenRepositoryImpl {
         strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
         strContentCodeAction.append("import vn.com.viettel.repositories.").append(strClassRepository).append(";\r");
         strContentCodeAction.append("import vn.com.viettel.core.repositories.impl.BaseRepositoryImpl;").append("\r");
-        strContentCodeAction.append("import vn.com.viettel.core.dto.response.BaseResultSelect;").append("\r");
+        strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;").append("\r");
         strContentCodeAction.append("import java.util.ArrayList;").append("\r");
         strContentCodeAction.append("import org.springframework.stereotype.Repository;").append("\r");
         strContentCodeAction.append("import java.util.List;").append("\r");

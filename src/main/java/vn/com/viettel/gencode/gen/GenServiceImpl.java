@@ -75,7 +75,7 @@ public class GenServiceImpl {
         strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
         strContentCodeAction.append("import vn.com.viettel.services.").append(strClassService).append(";\r");
         strContentCodeAction.append("import lombok.AllArgsConstructor;").append("\r");
-        strContentCodeAction.append("import vn.com.viettel.core.dto.response.BaseResultSelect;").append("\r");
+        strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;").append("\r");
         strContentCodeAction.append("import org.springframework.stereotype.Service;").append("\r");
         strContentCodeAction.append("import java.util.List;").append("\r\r");
 

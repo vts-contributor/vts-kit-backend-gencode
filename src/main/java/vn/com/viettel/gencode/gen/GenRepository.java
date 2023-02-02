@@ -77,7 +77,7 @@ public class GenRepository {
         strContentCodeAction.append("package vn.com.viettel.repositories;").append("\r\r");
         strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTOEntity).append(";\r");
         strContentCodeAction.append("import java.util.List;").append("\r");
-        strContentCodeAction.append("import vn.com.viettel.core.dto.response.BaseResultSelect;").append("\r\r");
+        strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;").append("\r\r");
 
         //thuc hien gen comment
         strContentCodeAction.append("/**").append("\r");
