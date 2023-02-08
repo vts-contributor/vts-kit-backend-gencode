@@ -1,16 +1,51 @@
-{
+[{
   "className": "Employees",
-  "desc": "Lớp thao tác danh sach nhan vien",
+  "desc": "Lớp thao tác danh sach phòng",
   "listMethod": [
     {
       "type": "get",
-      "name": "getEmployees",
-      "value": "/v1/employees",
-      "sql": "SELECT * FROM HR_EMPLOYEES WHERE (:employeeId is null or EMPLOYEE_ID = :employeeId ) AND (:fullName is null or FULL_NAME LIKE %:fullName%)",
-      "params":["employeeId","fullName"],
-      "desc": "Lay du thong tin nhan vien",
-      "count": 1,
+      "name": "findEmployeebyId2",
+      "value": "/v1/employee2/{id}",
+      "sql": "SELECT * FROM HR_EMPLOYEES WHERE ID = :id",
+      "params":["id"],
+      "desc": "Lay thong tin nhan vien theo id",
       "jpa": true
+    },
+    {
+      "type": "delete",
+      "name": "deleteEmployee",
+      "value": "/v1/delete/{id}",
+      "sql": "DELETE FROM HR_EMPLOYEES WHERE ID = :id ",
+      "params":[],
+      "desc": "xoa nhan vien theo id",
+      "jpa": true
+    },
+    {
+      "type": "put",
+      "name": "updateEmployee",
+      "value": "/v1/employee/{id}",
+      "sql": "update HR_EMPLOYEES set EMPLOYEE_ID = :employeeId, FULL_NAME = :fullName WHERE ID = :id",
+      "params":["id", "employeeId", "fullName"],
+      "desc": "Cap nhat thong tin",
+      "jpa": false
     }
   ]
-}
+},
+
+  {
+    "className": "Rooms",
+    "desc": "Lớp thao tác danh sach phong",
+    "listMethod": [
+      {
+        "type": "get",
+        "name": "getRooms",
+        "value": "/v1/rooms",
+        "sql": "SELECT * FROM ROOMS WHERE (:roomId is null or ROOM_ID = :roomId )",
+        "params":["roomId"],
+        "desc": "Lay du thong tin",
+        "count": 1,
+        "jpa": true
+      }
+    ]
+  }]
+

@@ -86,8 +86,8 @@ public class GenController {
         strContentCodeAction.append("import org.springframework.security.core.Authentication;").append("\r");
         strContentCodeAction.append("import org.springframework.http.ResponseEntity;").append("\r");
         strContentCodeAction.append("import org.springframework.web.bind.annotation.*;").append("\r");
-        strContentCodeAction.append("import vn.com.viettel.utils.Constants;").append("\r");
-        strContentCodeAction.append("import vn.com.viettel.utils.ResponseUtils;").append("\r\r");
+        strContentCodeAction.append("import vn.com.viettel.gencode.utils.Constants;").append("\r");
+        strContentCodeAction.append("import vn.com.viettel.gencode.utils.ResponseUtils;").append("\r\r");
 
         //thuc hien gen comment
         strContentCodeAction.append("/**").append("\r");
@@ -103,25 +103,37 @@ public class GenController {
         strContentCodeAction.append("@RequiredArgsConstructor").append("\r");
         strContentCodeAction.append("public class ").append(strClassController).append(" {").append("\r");
 
+        StringBuilder servicesDeclaration= new StringBuilder();
+        StringBuilder methodsDeclaration= new StringBuilder();
+
         //thuc hien gen method trong khai bao
-        itemObject.getListMethod().forEach((method) -> {
+        boolean isFirst = true;
+        boolean isFirstJPA = true;
+        for (MethodEntity method : itemObject.getListMethod()) {
             if (method.getJpa() != null && method.getJpa()) {
                 if (listTableName != null && !listTableName.isEmpty()) {
                     for (String varTableName : listTableName) {
                         String strClassServiceJPA = FunctionCommon.camelcasify(Character.toUpperCase(varTableName.charAt(0)) + varTableName.substring(1)) + "ServiceJPA";
-//                        strContentCodeAction.append("    @Autowired ").append("\r");
                         String variableServiceJPA = Character.toLowerCase(strClassServiceJPA.charAt(0)) + strClassServiceJPA.substring(1);
-                        strContentCodeAction.append("    private final ").append(strClassServiceJPA).append(" ").append(variableServiceJPA).append(";\r");
-                        strContentCodeAction.append(generateFunctionController(strClassDTO, strClassServiceJPA, method));
+                        if (isFirstJPA) {
+                            servicesDeclaration.append("    private final ").append(strClassServiceJPA).append(" ").append(variableServiceJPA).append(";\r");
+                            isFirstJPA = false;
+                        }
+                        methodsDeclaration.append(generateFunctionController(strClassDTO, strClassServiceJPA, method));
                     }
                 }
             } else {
-//                strContentCodeAction.append("    @Autowired ").append("\r");
                 String variableService = Character.toLowerCase(strClassService.charAt(0)) + strClassService.substring(1);
-                strContentCodeAction.append("    private final ").append(strClassService).append(" ").append(variableService).append(";\r");
-                strContentCodeAction.append(generateFunctionController(strClassDTO, strClassService, method));
+                if (isFirst) {
+                    servicesDeclaration.append("    private final ").append(strClassService).append(" ").append(variableService).append(";\r");
+                    isFirst = false;
+                }
+                methodsDeclaration.append(generateFunctionController(strClassDTO, strClassService, method));
             }
-        });
+        }
+
+        strContentCodeAction.append(servicesDeclaration).append(methodsDeclaration);
+
         strContentCodeAction.append("\n}");
         return strContentCodeAction;
     }
@@ -152,24 +164,15 @@ public class GenController {
         }
         List<String> listParams;
         StringBuilder strParams = new StringBuilder();
-        StringBuilder strParamsMethod = new StringBuilder();
         if (strMethodName.getValue() != null && strMethodName.getValue().trim().length() > 0) {
             listParams = FunctionCommon.getListParamsFromUrl(strMethodName.getValue());
-            boolean first = true;
             for (String itemParams : listParams) {
                 if (itemParams != null && itemParams.trim().length() > 0) {
-                    if (!first) {
-                        strParams.append(",");
-                        strParamsMethod.append(",");
-                    }
                     if (itemParams.toLowerCase().endsWith("id")) {
                         strParams.append("@PathVariable Long ").append(itemParams);
-                        strParamsMethod.append(itemParams);
                     } else {
                         strParams.append("@PathVariable String ").append(itemParams);
-                        strParamsMethod.append(itemParams);
                     }
-                    first = false;
                 }
             }
         }
@@ -266,10 +269,16 @@ public class GenController {
         strContentCodeAction.append("        */").append("\r");
 
         //khai bao class service de goi
-        strContentCodeAction.append("        ").append("Object result = ").append(variableService).append(".").append(strMethodName.getName()).append("(").append(strVariableClassDTO);
-        if (strParamsMethod.toString().trim().length() > 0) {
-            strContentCodeAction.append(",").append(strParamsMethod);
+        if (strMethodName.getValue() != null && strMethodName.getValue().trim().length() > 0) {
+            listParams = FunctionCommon.getListParamsFromUrl(strMethodName.getValue());
+            for (String itemParams : listParams) {
+                if (itemParams != null && itemParams.trim().length() > 0) {
+                    String nameParam = Character.toUpperCase(itemParams.charAt(0)) + itemParams.substring(1);
+                    strContentCodeAction.append("        ").append(strVariableClassDTO).append(".set").append(nameParam).append("(").append(itemParams).append(");\r");
+                }
+            }
         }
+        strContentCodeAction.append("        ").append("Object result = ").append(variableService).append(".").append(strMethodName.getName()).append("(").append(strVariableClassDTO);
         strContentCodeAction.append(");").append("\r");
         strContentCodeAction.append("        return ").append("ResponseUtils.getResponseEntity(result);").append("\r");
         strContentCodeAction.append("    }");
@@ -277,6 +286,8 @@ public class GenController {
     }
 
     private static StringBuilder addMethodIfNotExitsFile(String strSubLast, ObjectEntity itemObject) {
+        List<String> listTableName = FunctionCommon.getListTableFromSql(itemObject);
+        String strClassDTO = itemObject.getClassName() + "DTO";
         StringBuilder strContentCodeAction = new StringBuilder(strSubLast);
         itemObject.getListMethod().forEach((method) -> {
             String strMethodName = " " + method.getName().toLowerCase() + "(";
@@ -286,11 +297,21 @@ public class GenController {
 
 
             if (!strContenFile.contains(strMethodName) && !strContenFile.contains(strMethodName1)) {
-                LOGGER.info("method= " + method.getName());
+
+                if (method.getJpa() != null && method.getJpa()) {
+                        for (String varTableName : listTableName) {
+                            String strClassServiceJPA = FunctionCommon.camelcasify(Character.toUpperCase(varTableName.charAt(0)) + varTableName.substring(1)) + "ServiceJPA";
+                            strContentCodeAction.append(generateFunctionController(strClassDTO, strClassServiceJPA, method));
+                        }
+                } else {
+                    String strClassService = itemObject.getClassName() + "Service";
+                    strContentCodeAction.append(generateFunctionController(strClassDTO, strClassService, method));
+                }
+                /*LOGGER.info("method= " + method.getName());
                 String strClassService = itemObject.getClassName() + "Service";
                 String strClassDTO = itemObject.getClassName() + "DTO";
                 //Neu khong co phuong thuc trong class thi add them phuong thuc
-                strContentCodeAction.append(generateFunctionController(strClassDTO, strClassService, method)).append("\r");
+                strContentCodeAction.append(generateFunctionController(strClassDTO, strClassService, method)).append("\r");*/
             }
             //kiem tra xem co du phuong thuc post get hay ko
             List<MethodEntity> listMethod = itemObject.getListMethod();

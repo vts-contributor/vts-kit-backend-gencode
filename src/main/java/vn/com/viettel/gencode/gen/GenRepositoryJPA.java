@@ -1,6 +1,7 @@
 package vn.com.viettel.gencode.gen;
 
 import org.apache.log4j.Logger;
+import vn.com.viettel.gencode.entities.MethodEntity;
 import vn.com.viettel.gencode.entities.ObjectEntity;
 import vn.com.viettel.gencode.entities.VariableEntity;
 import vn.com.viettel.gencode.utils.FunctionCommon;
@@ -49,8 +50,8 @@ public class GenRepositoryJPA {
         try {
             //thuc hien gen class
             if (stringTableName != null) {
-                stringTableName = Character.toUpperCase(stringTableName.charAt(0)) + FunctionCommon.camelcasify(stringTableName.substring(1));
-                String strClassRepositoryJPA = stringTableName + "RepositoryJPA";
+                String stringTableNameStr = Character.toUpperCase(stringTableName.charAt(0)) + FunctionCommon.camelcasify(stringTableName.substring(1));
+                String strClassRepositoryJPA = stringTableNameStr + "RepositoryJPA";
                 String pathRepositoryJPA= FunctionCommon.getPropertiesValue("src.url.create.code")
                         + File.separator + "src"
                         + File.separator + "main"
@@ -63,6 +64,15 @@ public class GenRepositoryJPA {
                         + File.separator + strClassRepositoryJPA + ".java";
                 File file = new File(pathRepositoryJPA);
                 if (file.exists()) {
+                    StringBuilder strString = new StringBuilder();
+                    strString.append(FunctionCommon.readLineByLine(pathRepositoryJPA));
+                    String strSubLast = strString.substring(0, strString.toString().trim().lastIndexOf("}"));
+
+                    StringBuilder strFullCode = addMethodIfNotExits(stringTableName,strSubLast, itemObject);
+                    FileWriter fileWriterAction = new FileWriter(pathRepositoryJPA);
+                    try (PrintWriter printWriteAction = new PrintWriter(fileWriterAction)) {
+                        printWriteAction.print(strFullCode);
+                    }
                     return;
                 } else {
                     file.getParentFile().mkdirs();
@@ -86,6 +96,8 @@ public class GenRepositoryJPA {
      * @return
      */
     private static StringBuilder generateClassRepositoryJPA(String stringTableName, ObjectEntity itemObject) {
+        List<VariableEntity> variableTables = GenEntity.getListVariableFromSql(stringTableName);
+        stringTableName = Character.toUpperCase(stringTableName.charAt(0)) + FunctionCommon.camelcasify(stringTableName.substring(1));
         String strClassEntity = FunctionCommon.camelcasify(stringTableName) + "Entity";
         String strClassDTO = itemObject.getClassName() + "DTO";
         String strClassRepository = stringTableName + "RepositoryJPA";
@@ -125,22 +137,36 @@ public class GenRepositoryJPA {
         itemObject.getListMethod().forEach((method) -> {
             StringBuilder strParams = new StringBuilder();
             if (method.getJpa() != null && method.getJpa()) {
+                String prefixFirstEntity = String.valueOf(Character.toLowerCase(strClassEntity.charAt(0)));
                 String strSQLMapping = method.getSql();
                 if (method.getParams() != null) {
                     // Replace param and column
+                    for (VariableEntity variableEntity : variableTables) {
+                        if (variableEntity.getColumnNameOrigin() != null && strSQLMapping.contains(variableEntity.getColumnNameOrigin().toUpperCase())) {
+                            String variableJPa = prefixFirstEntity + "." + Character.toLowerCase(variableEntity.getColumnName().charAt(0)) + FunctionCommon.camelcasify(variableEntity.getColumnName().substring(1));
+                            strSQLMapping = strSQLMapping.replace(variableEntity.getColumnNameOrigin(), variableJPa);
+                        }
+                    }
+                    strSQLMapping = strSQLMapping.toLowerCase();
                     for (String param : method.getParams()) {
                         VariableEntity variableEntity = variableEntities.stream().filter(variable -> param.equalsIgnoreCase(variable.getColumnName())).findAny().orElse(null);
                         if (variableEntity != null) {
-                            strSQLMapping = strSQLMapping.replace(":" + param, ":#{#" + varClassDTO + "." + variableEntity.getColumnName() + "}");
+                            strSQLMapping = strSQLMapping.replace(":" + param.toLowerCase(), ":#{#" + varClassDTO + "." + variableEntity.getColumnName() + "}");
                         }
                     }
 
-                    for (VariableEntity variableEntity : variableEntities) {
-                        if (variableEntity.getColumnNameOrigin() != null && strSQLMapping.toLowerCase().contains(variableEntity.getColumnNameOrigin().toLowerCase())) {
-                            strSQLMapping = strSQLMapping.replace(variableEntity.getColumnNameOrigin(), Character.toLowerCase(strClassEntity.charAt(0)) + "."
-                                    + Character.toLowerCase(variableEntity.getColumnName().charAt(0)) + FunctionCommon.camelcasify(variableEntity.getColumnName().substring(1)));
+                    if (method.getValue() != null && method.getValue().trim().length() > 0) {
+                        List<String> listParams = FunctionCommon.getListParamsFromUrl(method.getValue());
+                        for (String param : listParams) {
+                            if (param != null && param.trim().length() > 0) {
+                                VariableEntity variableEntity = variableEntities.stream().filter(variable -> param.equalsIgnoreCase(variable.getColumnName())).findAny().orElse(null);
+                                if (variableEntity != null) {
+                                    strSQLMapping = strSQLMapping.replace(":" + param.toLowerCase(), ":#{#" + varClassDTO + "." + variableEntity.getColumnName() + "}");
+                                }
+                            }
                         }
                     }
+
 
                     strParams.append("@Param(\"").append(varClassDTO).append("\") ").append(strClassDTO).append(" ").append(varClassDTO).append(", ");
 
@@ -148,25 +174,72 @@ public class GenRepositoryJPA {
                 if ( numberOfTable > 1) {
 
                 } else {
-                    String strSqlWhere = "";
-                    if (strSQLMapping.toLowerCase().contains("where")) {
-                        strSqlWhere = strSQLMapping.substring(strSQLMapping.toLowerCase().lastIndexOf("where"));
-                    }
-
-                    if (method.getSql() != null && method.getSql().trim().length() > 0) {
-                        String sqlCommand = method.getSql().toLowerCase().trim().replaceAll("( )+", " ");
-                        if (sqlCommand.startsWith("insert into ") || sqlCommand.startsWith("update") || sqlCommand.startsWith("delete")) {
-                            strContentCodeAction.append("    @Transactional\r");
-                            strContentCodeAction.append("    @Modifying\r");
-                        }
-                    }
-                    strContentCodeAction.append("    @Query(\"FROM ").append(strClassEntity).append(" ").append(Character.toLowerCase(strClassEntity.charAt(0))).append(" ").append(strSqlWhere).append("\")\r");
-                    strContentCodeAction.append("    Page<").append(strClassEntity).append("> ").append(method.getName()).append("(").append(strParams).append("Pageable pageable);\r");
+                    strContentCodeAction.append(generateFunctionJPA(method,strParams,strClassEntity));
                 }
             }
         });
 
         strContentCodeAction.append("\n}");
+        return strContentCodeAction;
+    }
+
+    private static StringBuilder generateFunctionJPA(MethodEntity method, StringBuilder strParams, String strClassEntity){
+        if (method.getJpa() != null && !method.getJpa()) return new StringBuilder();
+        StringBuilder strFunctionJPA = new StringBuilder();
+        String prefixFirstEntity = String.valueOf(Character.toLowerCase(strClassEntity.charAt(0)));
+        String strSQLMapping = method.getSql();
+        String strSqlWhere= "";
+        if (strSQLMapping.toLowerCase().contains("where")) {
+            strSqlWhere = strSQLMapping.substring(strSQLMapping.toLowerCase().lastIndexOf("where"));
+        }
+
+        if (strSQLMapping != null && strSQLMapping.trim().length() > 0) {
+            String sqlCommand = strSQLMapping.toLowerCase().trim().replaceAll("( )+", " ");
+            if (sqlCommand.startsWith("insert into") || sqlCommand.startsWith("update") || sqlCommand.startsWith("delete")) {
+                strFunctionJPA.append("    @Transactional\r");
+                strFunctionJPA.append("    @Modifying\r");
+                if (sqlCommand.startsWith("insert into")) {
+                    strSQLMapping = strSQLMapping.substring(strSQLMapping.toLowerCase().lastIndexOf("values"));
+                    strFunctionJPA.append("    @Query(\"INSERT INTO ").append(strClassEntity).append(" ").append(prefixFirstEntity).append(" ").append(strSQLMapping).append("\")\r");
+                } else if (sqlCommand.startsWith("update")) {
+                    strSQLMapping = strSQLMapping.substring(strSQLMapping.toLowerCase().lastIndexOf("set"));
+                    strFunctionJPA.append("    @Query(\"UPDATE ").append(strClassEntity).append(" ").append(prefixFirstEntity).append(" ").append(strSQLMapping).append("\")\r");
+                } else if (sqlCommand.startsWith("delete")) {
+                    strFunctionJPA.append("    @Query(\"DELETE FROM ").append(strClassEntity).append(" ").append(prefixFirstEntity).append(" ").append(strSqlWhere).append("\")\r");
+                }
+                strFunctionJPA.append("    int ").append(method.getName()).append("(").append(strParams.substring(0, strParams.length() - 2)).append(");\r");
+            } else {
+                strFunctionJPA.append("    @Query(\"FROM ").append(strClassEntity).append(" ").append(prefixFirstEntity).append(" ").append(strSqlWhere).append("\")\r");
+                strFunctionJPA.append("    Page<").append(strClassEntity).append("> ").append(method.getName()).append("(").append(strParams).append("Pageable pageable);\r");
+            }
+        }
+        return strFunctionJPA;
+    }
+
+    private static StringBuilder addMethodIfNotExits(String stringTableName,String strSubLast, ObjectEntity itemObject) {
+        stringTableName = Character.toUpperCase(stringTableName.charAt(0)) + FunctionCommon.camelcasify(stringTableName.substring(1));
+        String strClassEntity = FunctionCommon.camelcasify(stringTableName) + "Entity";
+        String varClassDTO = Character.toLowerCase(itemObject.getClassName().charAt(0)) + FunctionCommon.camelcasify(itemObject.getClassName().substring(1));
+        String strClassDTO = itemObject.getClassName() + "DTO";
+        StringBuilder strParams = new StringBuilder();
+        strParams.append("@Param(\"").append(varClassDTO).append("\") ").append(strClassDTO).append(" ").append(varClassDTO).append(", ");
+
+        StringBuilder strContentCodeAction = new StringBuilder(strSubLast);
+        itemObject.getListMethod().forEach((method) -> {
+
+            String strMethodName = " " + method.getName().toLowerCase() + "(";
+            String strMethodName1 = " " + method.getName().toLowerCase() + " (";
+
+            String strContenFile = strContentCodeAction.toString().replaceAll("\\s{2,}", " ").toLowerCase();
+
+
+            if (!strContenFile.contains(strMethodName) && !strContenFile.contains(strMethodName1)) {
+                strContentCodeAction.append(generateFunctionJPA(method, strParams, strClassEntity));
+            }
+
+        });
+        //add lai ky tu dong class
+        strContentCodeAction.append("}");
         return strContentCodeAction;
     }
 }

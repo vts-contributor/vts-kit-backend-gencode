@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 /**
  * Thuc hien thao tac du lieu tren voffice 1.0
@@ -620,16 +621,31 @@ public class CommonDataBaseDao extends BaseDataDao {
      * @return
      */
     public List<String> getListTableAll() {
-        List<String> listColumns = new ArrayList<>();
-        CommonDataBaseDao cdbd = new CommonDataBaseDao();
-        StringBuilder sql = new StringBuilder();
-        sql.append("select TABLE_NAME columnName from user_tables");
-        List<VariableEntity> listTables =
-                (List<VariableEntity>) cdbd.executeSqlGetListObjOnCondition(sql, null, null, null, VariableEntity.class);
-        for (VariableEntity tableName : listTables) {
-            listColumns.add(tableName.getColumnName());
+        List<String> listTable = new ArrayList<>();
+        if (getDatabaseName().contains("mariadb")) {
+            try {
+                this.conn = openConnection();
+                DatabaseMetaData dbmd = this.conn.getMetaData();
+                String[] types = { "TABLE" };
+                ResultSet rs = dbmd.getTables(null, null, "%", types);
+                while (rs.next()) {
+                    listTable.add(rs.getString("TABLE_NAME"));
+                }
+            } catch (SQLException e) {
+                LOGGER.error(e);
+            }
+        } else {
+            CommonDataBaseDao cdbd = new CommonDataBaseDao();
+            StringBuilder sql = new StringBuilder();
+            sql.append("select TABLE_NAME columnName from user_tables");
+            List<VariableEntity> listTables =
+                    (List<VariableEntity>) cdbd.executeSqlGetListObjOnCondition(sql, null, null, null, VariableEntity.class);
+            for (VariableEntity tableName : listTables) {
+                listTable.add(tableName.getColumnName());
+            }
         }
-        return listColumns;
+
+        return listTable;
     }
 
     /**
@@ -685,5 +701,16 @@ public class CommonDataBaseDao extends BaseDataDao {
             LOGGER.error(e);
         }
         return listResult;
+    }
+
+    public String getDatabaseName() {
+        Properties props = FunctionCommon.readFileProperties("config.properties");
+        if (props != null && !props.isEmpty()) {
+            String driverName = props.getProperty("spring.datasource.driver-class-name");
+            if (driverName.contains("mariadb")) {
+                return "mariadb";
+            }
+        }
+        return "oracle";
     }
 }

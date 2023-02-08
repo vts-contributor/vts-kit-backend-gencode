@@ -18,8 +18,13 @@
         <mariadb.version>3.0.6</mariadb.version>
         <commons.lang.version>2.6</commons.lang.version>
         <log4j.version>1.2.17</log4j.version>
+        <vts-kit-backend-core.version>1.1-RELEASE</vts-kit-backend-core.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
@@ -55,6 +60,61 @@
             <version>${log4j.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>vn.com.viettel.core</groupId>
+            <artifactId>vts-kit-backend-core</artifactId>
+            <version>${vts-kit-backend-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+            <version>2.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+            <version>2.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>vn.viettel</groupId>
+            <artifactId>vcc-portal-database</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>vn.com.viettel.core</groupId>
+            <artifactId>vts-kit-backend-core-jpa</artifactId>
+            <version>1.1-RELEASE</version>
+        </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+    </build>
 
 </project>

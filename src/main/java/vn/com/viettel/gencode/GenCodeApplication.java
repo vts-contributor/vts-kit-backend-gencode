@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class GenCodeApplication {
 
@@ -21,29 +22,35 @@ public class GenCodeApplication {
         try {
             String strPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator;
             Reader reader = Files.newBufferedReader(Paths.get(strPath + "template.json"));
-            ObjectEntity itemObject = (ObjectEntity) FunctionCommon.convertJsonToObject(reader, ObjectEntity.class);
+            /*ObjectEntity itemObject = (ObjectEntity) FunctionCommon.convertJsonToObject(reader, ObjectEntity.class);
+            reader.close();*/
+
+            List<Object> itemList = FunctionCommon.convertJsonToListObject(reader, ObjectEntity.class);
             reader.close();
 
-            System.out.println("Object json : " + itemObject.toString());
+            for (Object item: itemList){
+                ObjectEntity itemObject = (ObjectEntity) item;
+                System.out.println("Object json : " + itemObject.toString());
 
-            //thuc hien gen class controller, dto
-            GenController.writeClassController(itemObject);
-            GenDTO.writeClassDTO(itemObject);
+                //thuc hien gen class controller, dto
+                GenController.writeClassController(itemObject);
+                GenDTO.writeClassDTO(itemObject);
 
-            //thuc hien gen class service, serviceImpl
-            GenService.writeClassService(itemObject);
-            GenServiceImpl.writeClassServiceImpl(itemObject);
+                //thuc hien gen class service, serviceImpl
+                GenService.writeClassService(itemObject);
+                GenServiceImpl.writeClassServiceImpl(itemObject);
 
-            //thuc hien gen class repository, repositoryImpl
-            GenRepository.writeClassRepository(itemObject);
-            GenRepositoryImpl.writeClassRepositoryImpl(itemObject);
+                //thuc hien gen class repository, repositoryImpl
+                GenRepository.writeClassRepository(itemObject);
+                GenRepositoryImpl.writeClassRepositoryImpl(itemObject);
 
-            //thuc hien gen class JPA
-            GenServiceJPA.writeClassServiceJPA(itemObject);
-            GenRepositoryJPA.writeClassRepositoryJPA(itemObject);
+                //thuc hien gen class JPA
+                GenServiceJPA.writeClassServiceJPA(itemObject);
+                GenRepositoryJPA.writeClassRepositoryJPA(itemObject);
 
-            //thuc hien gen class entity
-            GenEntity.writeClassEntity(itemObject);
+                //thuc hien gen class entity
+                GenEntity.writeClassEntity(itemObject);
+            }
         } catch (IOException e) {
             System.out.println(e.getMessage());
             LOGGER.error(e);

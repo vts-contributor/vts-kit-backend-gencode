@@ -75,7 +75,7 @@ public class GenServiceImpl {
         strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
         strContentCodeAction.append("import vn.com.viettel.services.").append(strClassService).append(";\r");
         strContentCodeAction.append("import lombok.AllArgsConstructor;").append("\r");
-        strContentCodeAction.append("import vn.com.viettel.core.dto.response.BaseResultSelect;").append("\r");
+        strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;").append("\r");
         strContentCodeAction.append("import org.springframework.stereotype.Service;").append("\r");
         strContentCodeAction.append("import java.util.List;").append("\r\r");
 
@@ -91,7 +91,6 @@ public class GenServiceImpl {
         strContentCodeAction.append("@Service").append("\r");
         strContentCodeAction.append("@AllArgsConstructor").append("\r");
         strContentCodeAction.append("public class ").append(strClassServiceImpl).append(" implements ").append(strClassService).append(" {\r\r");
-//        strContentCodeAction.append("    @Autowired ").append("\r");
         String variableRepository = Character.toLowerCase(strClassRepository.charAt(0)) + strClassRepository.substring(1);
         strContentCodeAction.append("    private final ").append(strClassRepository).append(" ").append(variableRepository).append(";\r");
         //thuc hien gen method trong khai bao
@@ -112,6 +111,7 @@ public class GenServiceImpl {
      */
 
     private static StringBuilder generateFunctionServiceImpl(ObjectEntity itemObject, MethodEntity method) {
+        if (method.getJpa() != null && method.getJpa()) return new StringBuilder();
         String strClassRepository = itemObject.getClassName() + "Repository";
         String strClassDTO = itemObject.getClassName() + "DTO";
         String strVariableClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
@@ -126,31 +126,9 @@ public class GenServiceImpl {
         strContentCodeAction.append("     * @return ").append("\r");
         strContentCodeAction.append("     */").append("\r");
 
-        StringBuilder strParamsMethod = new StringBuilder();
-        if (method.getValue() != null && method.getValue().trim().length() > 0) {
-            List<String> listParams = FunctionCommon.getListParamsFromUrl(method.getValue());
-            boolean first = true;
-            for (String itemParams : listParams) {
-                if (itemParams != null && itemParams.trim().length() > 0) {
-                    if (!first) {
-                        strParamsMethod.append(",");
-                    }
-                    if (itemParams.toLowerCase().endsWith("id")) {
-                        strParamsMethod.append(" Long ").append(itemParams);
-                    } else {
-                        strParamsMethod.append(" String ").append(itemParams);
-                    }
-                    first = false;
-                }
-            }
-        }
         //noi dung phuong thuc
         strContentCodeAction.append("    @Override").append("\r");
-        strContentCodeAction.append("    public Object ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO);
-        if (strParamsMethod.toString().trim().length() > 0) {
-            strContentCodeAction.append(",").append(strParamsMethod);
-        }
-        strContentCodeAction.append(") {").append("\r");
+        strContentCodeAction.append("    public Object ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO).append(") {").append("\r");
 
         //gen comment code lay params
         strContentCodeAction.append("        /*").append("\r");
@@ -195,7 +173,7 @@ public class GenServiceImpl {
             if (!strContenFile.contains(strMethodName) && !strContenFile.contains(strMethodName1)) {
                 System.out.println("method= " + method.getName());
                 //Neu khong co phuong thuc trong class thi add them phuong thuc
-                strContentCodeAction.append(generateFunctionServiceImpl(itemObject, method)).append("\r");
+                strContentCodeAction.append(generateFunctionServiceImpl(itemObject, method));
             }
         });
         //add lai ky tu dong class

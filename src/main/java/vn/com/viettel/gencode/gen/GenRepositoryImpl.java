@@ -82,7 +82,7 @@ public class GenRepositoryImpl {
         strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
         strContentCodeAction.append("import vn.com.viettel.repositories.").append(strClassRepository).append(";\r");
         strContentCodeAction.append("import vn.com.viettel.core.repositories.impl.BaseRepositoryImpl;").append("\r");
-        strContentCodeAction.append("import vn.com.viettel.core.dto.response.BaseResultSelect;").append("\r");
+        strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;").append("\r");
         strContentCodeAction.append("import java.util.ArrayList;").append("\r");
         strContentCodeAction.append("import org.springframework.stereotype.Repository;").append("\r");
         strContentCodeAction.append("import java.util.List;").append("\r");
@@ -118,6 +118,7 @@ public class GenRepositoryImpl {
      * @return
      */
     private static StringBuilder generateFunctionRepositoryImpl(ObjectEntity itemObject, MethodEntity method) {
+        if (method.getJpa() != null && method.getJpa()) return new StringBuilder();
         String strClassDTO = itemObject.getClassName() + "DTO";
         String strVariableClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
         //thuc hien gen cac ham trong class
@@ -232,11 +233,11 @@ public class GenRepositoryImpl {
         itemObject.getListMethod().forEach((method) -> {
             String strMethodName = " " + method.getName().toLowerCase() + "(";
             String strMethodName1 = " " + method.getName().toLowerCase() + " (";
-            String strContenFile = strContentCodeAction.toString().replaceAll("\\s{2,}", " ").toLowerCase();
-            if (!strContenFile.contains(strMethodName) && !strContenFile.contains(strMethodName1)) {
+            String strContentFile = strContentCodeAction.toString().replaceAll("\\s{2,}", " ").toLowerCase();
+            if (!strContentFile.contains(strMethodName) && !strContentFile.contains(strMethodName1)) {
                 System.out.println("method= " + method.getName());
                 //Neu khong co phuong thuc trong class thi add them phuong thuc
-                strContentCodeAction.append(generateFunctionRepositoryImpl(itemObject, method)).append("\r");
+                strContentCodeAction.append(generateFunctionRepositoryImpl(itemObject, method));
             }
         });
         //add lai ky tu dong class
