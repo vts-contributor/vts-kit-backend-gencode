@@ -111,6 +111,7 @@ public class GenServiceImpl {
      */
 
     private static StringBuilder generateFunctionServiceImpl(ObjectEntity itemObject, MethodEntity method) {
+        if (method.getJpa() != null && method.getJpa()) return new StringBuilder();
         String strClassRepository = itemObject.getClassName() + "Repository";
         String strClassDTO = itemObject.getClassName() + "DTO";
         String strVariableClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
@@ -172,7 +173,7 @@ public class GenServiceImpl {
             if (!strContenFile.contains(strMethodName) && !strContenFile.contains(strMethodName1)) {
                 System.out.println("method= " + method.getName());
                 //Neu khong co phuong thuc trong class thi add them phuong thuc
-                strContentCodeAction.append(generateFunctionServiceImpl(itemObject, method)).append("\r");
+                strContentCodeAction.append(generateFunctionServiceImpl(itemObject, method));
             }
         });
         //add lai ky tu dong class

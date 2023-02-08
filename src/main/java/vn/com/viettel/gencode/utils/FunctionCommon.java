@@ -5,18 +5,19 @@
  */
 package vn.com.viettel.gencode.utils;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonReader;
 import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.dao.CommonDataBaseDao;
 import vn.com.viettel.gencode.entities.MethodEntity;
 import vn.com.viettel.gencode.entities.ObjectEntity;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -84,6 +85,27 @@ public class FunctionCommon {
         }
         return result;
     }
+
+    /**
+     * convert json to object
+     *
+     * @param strJsonData
+     * @param classOfT
+     * @return
+     */
+    public static List<Object> convertJsonToListObject(Reader strJsonData, Class<?> classOfT) {
+        ObjectMapper mapper = new ObjectMapper();
+        List<Object> myObjects = new ArrayList<>();
+        try {
+            myObjects = mapper.readValue(strJsonData,  mapper.getTypeFactory().constructCollectionType(List.class, classOfT));
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            LOGGER.error(e);
+        }
+
+        return myObjects;
+    }
+
 
     /**
      * Kiem tra xem cot select trong database va class co cot tuong ung hay

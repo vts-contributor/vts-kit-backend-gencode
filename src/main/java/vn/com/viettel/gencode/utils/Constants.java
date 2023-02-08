@@ -9,6 +9,7 @@ package vn.com.viettel.gencode.utils;
  * @author datnv5
  */
 public class Constants {
+    public static final String REQUEST_MAPPING_PREFIX = "/api";
     public static String STR_EMPTY = "";
     public static String STR_SQL_PARAM = ":%s";
     public static String STR_SQL_ASK_PARAM = "?";

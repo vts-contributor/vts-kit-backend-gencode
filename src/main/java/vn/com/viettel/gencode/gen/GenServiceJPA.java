@@ -58,6 +58,15 @@ public class GenServiceJPA {
                     + File.separator + strClassServiceJPA + ".java";
             File file = new File(pathFileServiceJPA);
             if (file.exists()) {
+                StringBuilder strString = new StringBuilder();
+                strString.append(FunctionCommon.readLineByLine(pathFileServiceJPA));
+                String strSubLast = strString.substring(0, strString.toString().trim().lastIndexOf("}"));
+
+                StringBuilder strFullCode = addMethodIfNotExits(classTableService,strSubLast, itemObject);
+                FileWriter fileWriterAction = new FileWriter(pathFileServiceJPA);
+                try (PrintWriter printWriteAction = new PrintWriter(fileWriterAction)) {
+                    printWriteAction.print(strFullCode);
+                }
                 return;
             } else {
                 file.getParentFile().mkdirs();
@@ -169,6 +178,7 @@ public class GenServiceJPA {
      * @return
      */
     private static StringBuilder generateServiceJPA(List<VariableEntity> variableEntities, MethodEntity method, String strClassDTO, String strClassEntity, String strTableNameCamel) {
+        if (method.getJpa() != null && !method.getJpa()) return new StringBuilder();
         StringBuilder strContentCodeAction = new StringBuilder();
         String varClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
         if (method.getSql() != null && method.getSql().trim().length() > 0) {
@@ -197,4 +207,24 @@ public class GenServiceJPA {
         }
         return strContentCodeAction;
     }
+
+    private static StringBuilder addMethodIfNotExits(String stringTableName,String strSubLast, ObjectEntity itemObject) {
+        List<VariableEntity> variableEntities = GenDTO.getListVariableFrom(itemObject, true);
+        String strClassDTO = itemObject.getClassName() + "DTO";
+        String strClassEntity = FunctionCommon.camelcasify(stringTableName) + "Entity";
+        String varStringTableNameCamel = Character.toLowerCase(stringTableName.charAt(0)) + FunctionCommon.camelcasify(stringTableName.substring(1));
+        StringBuilder strContentCodeAction = new StringBuilder(strSubLast);
+        itemObject.getListMethod().forEach((method) -> {
+            String strMethodName = " " + method.getName().toLowerCase() + "(";
+            String strMethodName1 = " " + method.getName().toLowerCase() + " (";
+            String strContenFile = strContentCodeAction.toString().replaceAll("\\s{2,}", " ").toLowerCase();
+            if (!strContenFile.contains(strMethodName) && !strContenFile.contains(strMethodName1)) {
+                strContentCodeAction.append(generateServiceJPA(variableEntities, method, strClassDTO, strClassEntity, varStringTableNameCamel));
+            }
+        });
+        //add lai ky tu dong class
+        strContentCodeAction.append("}");
+        return strContentCodeAction;
+    }
+
 }

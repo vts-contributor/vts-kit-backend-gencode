@@ -108,6 +108,7 @@ public class GenRepository {
      * @return
      */
     private static StringBuilder generateFunctionRepository(ObjectEntity itemObject, MethodEntity method) {
+        if (method.getJpa() != null && method.getJpa()) return new StringBuilder();
         String strClassDTO = itemObject.getClassName() + "DTO";
         String strVariableClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
         //thuc hien gen cac ham trong class
@@ -140,7 +141,7 @@ public class GenRepository {
             if (!strContenFile.contains(strMethodName) && !strContenFile.contains(strMethodName1)) {
                 System.out.println("method= " + method.getName());
                 //Neu khong co phuong thuc trong class thi add them phuong thuc
-                strContentCodeAction.append(generateFunctionRepository(itemObject, method)).append("\r");
+                strContentCodeAction.append(generateFunctionRepository(itemObject, method));
             }
         });
         //add lai ky tu dong class

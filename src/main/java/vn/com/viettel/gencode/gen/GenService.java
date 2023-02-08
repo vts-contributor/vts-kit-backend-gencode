@@ -100,6 +100,7 @@ public class GenService {
      * @return
      */
     private static StringBuilder generateFunctionService(ObjectEntity itemObject, MethodEntity method) {
+        if (method.getJpa() != null && method.getJpa()) return new StringBuilder();
         StringBuilder strParamsMethod = new StringBuilder();
         String strClassDTO = itemObject.getClassName() + "DTO";
         String strVariableClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
@@ -127,7 +128,7 @@ public class GenService {
             if (!strContentFile.contains(strMethodName)) {
                 System.out.println("method= " + method.getName());
                 //Neu khong co phuong thuc trong class thi add them phuong thuc
-                strContentCodeAction.append(generateFunctionService(itemObject, method)).append("\r");
+                strContentCodeAction.append(generateFunctionService(itemObject, method));
             }
         });
         //add lai ky tu dong class
