@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.dao.CommonDataBaseDao;
 import vn.com.viettel.gencode.entities.ObjectEntity;
 import vn.com.viettel.gencode.entities.VariableEntity;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
@@ -47,16 +48,14 @@ public class GenEntity {
             if (stringTableName != null) {
                 stringTableName = Character.toUpperCase(stringTableName.charAt(0)) + stringTableName.substring(1);
                 String strClassEntity = Character.toUpperCase(stringTableName.charAt(0)) + FunctionCommon.camelcasify(stringTableName.substring(1)) + "Entity";
+                String pathFileEntity = new StringBuilder().
+                        append("src/main/java").
+                        append(Constants.PACKAGE_NAME_PATH).
+                        append("entities").
+                        append("/").
+                        append(strClassEntity).
+                        append(".java").toString();
 
-                String pathFileEntity = FunctionCommon.getPropertiesValue("src.url.create.code")
-                        + File.separator + "src"
-                        + File.separator + "main"
-                        + File.separator + "java"
-                        + File.separator + "vn"
-                        + File.separator + "com"
-                        + File.separator + "viettel"
-                        + File.separator + "entities"
-                        + File.separator + strClassEntity + ".java";
                 File file = new File(pathFileEntity);
                 if (file.exists()) {
                     //neu entity da ton tai
@@ -96,7 +95,7 @@ public class GenEntity {
 
         // File Entity
         //==============chen header import======================================
-        strContentCodeAction.append("package vn.com.viettel.entities;").append("\r\r");
+        strContentCodeAction.append("package ").append(Constants.PACKAGE_NAME).append(".entities;").append("\r\r");
         strContentCodeAction.append("import java.io.Serializable;").append("\r");
         strContentCodeAction.append("import javax.persistence.*;").append("\r");
         strContentCodeAction.append("import javax.validation.constraints.NotNull;").append("\r");

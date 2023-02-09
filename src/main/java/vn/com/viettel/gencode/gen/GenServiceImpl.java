@@ -3,6 +3,7 @@ package vn.com.viettel.gencode.gen;
 import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.entities.MethodEntity;
 import vn.com.viettel.gencode.entities.ObjectEntity;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
@@ -10,7 +11,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Gen class ServiceImpl
@@ -24,16 +24,16 @@ public class GenServiceImpl {
             //thuc hien gen class
             if (itemObject != null) {
                 String strClassServiceImpl = itemObject.getClassName() + "ServiceImpl";
-                String pathFileServiceImpl = FunctionCommon.getPropertiesValue("src.url.create.code")
-                        + File.separator + "src"
-                        + File.separator + "main"
-                        + File.separator + "java"
-                        + File.separator + "vn"
-                        + File.separator + "com"
-                        + File.separator + "viettel"
-                        + File.separator + "services"
-                        + File.separator + "impl"
-                        + File.separator + strClassServiceImpl + ".java";
+                String pathFileServiceImpl = new StringBuilder().
+                        append("src/main/java").
+                        append(Constants.PACKAGE_NAME_PATH).
+                        append("services").
+                        append("/").
+                        append("impl").
+                        append("/").
+                        append(strClassServiceImpl).
+                        append(".java").toString();
+
                 File file = new File(pathFileServiceImpl);
                 if (file.exists()) {
                     StringBuilder strString = new StringBuilder();
@@ -70,10 +70,10 @@ public class GenServiceImpl {
 
         // File ServiceImpl
         //==============chen header import======================================
-        strContentCodeAction.append("package vn.com.viettel.services.impl;").append("\r\r");
-        strContentCodeAction.append("import vn.com.viettel.repositories.").append(strClassRepository).append(";\r");
-        strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
-        strContentCodeAction.append("import vn.com.viettel.services.").append(strClassService).append(";\r");
+        strContentCodeAction.append("package ").append(Constants.PACKAGE_NAME).append(".services.impl;").append("\r\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".repositories.").append(strClassRepository).append(";\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".dto.").append(strClassDTO).append(";\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".services.").append(strClassService).append(";\r");
         strContentCodeAction.append("import lombok.AllArgsConstructor;").append("\r");
         strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;").append("\r");
         strContentCodeAction.append("import org.springframework.stereotype.Service;").append("\r");

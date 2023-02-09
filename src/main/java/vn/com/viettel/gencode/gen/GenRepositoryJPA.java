@@ -3,6 +3,7 @@ package vn.com.viettel.gencode.gen;
 import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.entities.ObjectEntity;
 import vn.com.viettel.gencode.entities.VariableEntity;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
@@ -10,7 +11,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static vn.com.viettel.gencode.gen.GenEntity.getListPrivateKey;
 
@@ -51,16 +54,16 @@ public class GenRepositoryJPA {
             if (stringTableName != null) {
                 String stringTableNameStr = Character.toUpperCase(stringTableName.charAt(0)) + FunctionCommon.camelcasify(stringTableName.substring(1));
                 String strClassRepositoryJPA = stringTableNameStr + "RepositoryJPA";
-                String pathRepositoryJPA= FunctionCommon.getPropertiesValue("src.url.create.code")
-                        + File.separator + "src"
-                        + File.separator + "main"
-                        + File.separator + "java"
-                        + File.separator + "vn"
-                        + File.separator + "com"
-                        + File.separator + "viettel"
-                        + File.separator + "repositories"
-                        + File.separator + "jpa"
-                        + File.separator + strClassRepositoryJPA + ".java";
+                String pathRepositoryJPA = new StringBuilder().
+                        append("src/main/java").
+                        append(Constants.PACKAGE_NAME_PATH).
+                        append("repositories").
+                        append("/").
+                        append("jpa").
+                        append("/").
+                        append(strClassRepositoryJPA).
+                        append(".java").toString();
+
                 File file = new File(pathRepositoryJPA);
                 if (file.exists()) {
                     return;
@@ -80,8 +83,32 @@ public class GenRepositoryJPA {
         }
     }
 
+    private static HashMap<String, String> getEntityFromSQLStr(String sql) {
+        HashMap<String, String> variableEntitiesMap = new HashMap<>();
+        String[] variableEntitiesList = sql.split(" ");
+        for (int i = 0; i < variableEntitiesList.length; i++) {
+            variableEntitiesMap.putIfAbsent(variableEntitiesList[i], variableEntitiesList[i]);
+        }
+
+        return variableEntitiesMap;
+    }
+
+    private static String genStrSQL(String strSQLMapping, String target, String replacement) {
+        String[] list = strSQLMapping.split(" ");
+        String sql = "";
+        for (int i = 0; i < list.length; i++) {
+            if (list[i].equals(target)) {
+                list[i] = replacement;
+            }
+            sql += (list[i] + " ");
+        }
+
+        return sql;
+    }
+
     /**
      * thuc hien autogencode dao
+     *
      * @param stringTableName
      * @return
      */
@@ -98,9 +125,9 @@ public class GenRepositoryJPA {
 
         // File RepositoryJPA
         //==============chen header import======================================
-        strContentCodeAction.append("package vn.com.viettel.repositories.jpa;").append("\r\r");
-        strContentCodeAction.append("import vn.com.viettel.entities.").append(strClassEntity).append(";\r");
-        strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
+        strContentCodeAction.append("package ").append(Constants.PACKAGE_NAME).append(".repositories.jpa;").append("\r\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".entities.").append(strClassEntity).append(";\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".dto.").append(strClassDTO).append(";\r");
         strContentCodeAction.append("import org.springframework.stereotype.Repository;").append("\r");
         strContentCodeAction.append("import org.springframework.data.domain.Page;").append("\r");
         strContentCodeAction.append("import org.springframework.data.domain.Pageable;").append("\r");
@@ -124,7 +151,9 @@ public class GenRepositoryJPA {
 
         // Gen method Repository JPA
         List<VariableEntity> variableEntities = GenDTO.getListVariableFrom(itemObject, true);
+
         itemObject.getListMethod().forEach((method) -> {
+            Map<String, String> variableEntitiesMap = getEntityFromSQLStr(method.getSql());
             StringBuilder strParams = new StringBuilder();
             if (method.getJpa() != null && method.getJpa()) {
                 String prefixFirstEntity = String.valueOf(Character.toLowerCase(strClassEntity.charAt(0)));
@@ -134,8 +163,10 @@ public class GenRepositoryJPA {
                     strSQLMapping = strSQLMapping.toLowerCase();
                     for (String param : method.getParams()) {
                         VariableEntity variableEntity = variableEntities.stream().filter(variable -> param.equalsIgnoreCase(variable.getColumnName())).findAny().orElse(null);
+//                        VariableEntity variableEntity = variableEntities.stream().filter(variable -> param.contains(variable.getColumnName())).findAny().orElse(null);
                         if (variableEntity != null) {
-                            strSQLMapping = strSQLMapping.replace(":" + param.toLowerCase(), ":#{#" + varClassDTO + "." + variableEntity.getColumnName() + "}");
+//                            strSQLMapping = strSQLMapping.replace(":" + param.toLowerCase(), ":#{#" + varClassDTO + "." + variableEntity.getColumnName() + "}");
+                            strSQLMapping = genStrSQL(strSQLMapping, ":" + param.toLowerCase(), ":#{#" + varClassDTO + "." + variableEntity.getColumnName() + "}");
                         }
                     }
 
@@ -144,23 +175,33 @@ public class GenRepositoryJPA {
                         for (String param : listParams) {
                             if (param != null && param.trim().length() > 0) {
                                 VariableEntity variableEntity = variableEntities.stream().filter(variable -> param.equalsIgnoreCase(variable.getColumnName())).findAny().orElse(null);
+//                                VariableEntity variableEntity = variableEntities.stream().filter(variable -> param.contains(variable.getColumnName())).findAny().orElse(null);
                                 if (variableEntity != null) {
-                                    strSQLMapping = strSQLMapping.replace(":" + param.toLowerCase(), ":#{#" + varClassDTO + "." + variableEntity.getColumnName() + "}");
+//                                    strSQLMapping = strSQLMapping.replace(":" + param.toLowerCase(), ":#{#" + varClassDTO + "." + variableEntity.getColumnName() + "}");
+                                    strSQLMapping = genStrSQL(strSQLMapping, ":" + param.toLowerCase(), ":#{#" + varClassDTO + "." + variableEntity.getColumnName() + "}");
+
                                 }
                             }
                         }
                     }
-                    for (VariableEntity variableEntity : variableTables) {
-                        if (variableEntity.getColumnNameOrigin() != null && strSQLMapping.contains(variableEntity.getColumnNameOrigin().toLowerCase())) {
-                            String variableJPa = prefixFirstEntity + "." + Character.toLowerCase(variableEntity.getColumnName().charAt(0)) + FunctionCommon.camelcasify(variableEntity.getColumnName().substring(1));
-                            strSQLMapping = strSQLMapping.replace(variableEntity.getColumnNameOrigin(), variableJPa);
+                    for (VariableEntity variableEntity : variableEntities) {
+//                        if (variableEntity.getColumnNameOrigin() != null && strSQLMapping.contains(variableEntity.getColumnNameOrigin().toLowerCase())) {
+                        if (variableEntity.getColumnNameOrigin() != null && variableEntitiesMap.containsKey(variableEntity.getColumnNameOrigin().toLowerCase())) {
+
+//                            String variableJPa = prefixFirstEntity + "." + Character.toLowerCase(variableEntity.getColumnName().charAt(0)) + FunctionCommon.camelcasify(variableEntity.getColumnName().substring(1));
+//                            char temp = Character.toLowerCase(variableEntity.getColumnName().charAt(0));
+//                            String temp1 = FunctionCommon.camelcasify(variableEntity.getColumnName().substring(1));
+                            String variableJPa = prefixFirstEntity + "." + variableEntity.getColumnName();
+//                            strSQLMapping = strSQLMapping.replace(variableEntity.getColumnNameOrigin(), variableJPa);
+                            strSQLMapping = genStrSQL(strSQLMapping, variableEntity.getColumnNameOrigin(), variableJPa);
+
                         }
                     }
 
                     strParams.append("@Param(\"").append(varClassDTO).append("\") ").append(strClassDTO).append(" ").append(varClassDTO).append(", ");
 
                 }
-                if ( numberOfTable > 1) {
+                if (numberOfTable > 1) {
 
                 } else {
                     String strSqlWhere = "";

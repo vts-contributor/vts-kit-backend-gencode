@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- *
  * @author datnv5
  */
 public class FunctionCommon {
@@ -70,13 +69,13 @@ public class FunctionCommon {
         try {
             Gson gson
                     = new GsonBuilder()
-                            .registerTypeAdapter(int.class, new GsonEmptyStringToNumber.EmptyStringToNumberTypeAdapter())
-                            .registerTypeAdapter(Integer.class, new GsonEmptyStringToNumber.EmptyStringToNumberTypeAdapter())
-                            .registerTypeAdapter(long.class, new GsonEmptyStringToNumber.EmptyStringToLongTypeAdapter())
-                            .registerTypeAdapter(Long.class, new GsonEmptyStringToNumber.EmptyStringToLongTypeAdapter())
-                            .registerTypeAdapter(double.class, new GsonEmptyStringToNumber.EmptyStringToDoubleTypeAdapter())
-                            .registerTypeAdapter(Double.class, new GsonEmptyStringToNumber.EmptyStringToDoubleTypeAdapter())
-                            .create();
+                    .registerTypeAdapter(int.class, new GsonEmptyStringToNumber.EmptyStringToNumberTypeAdapter())
+                    .registerTypeAdapter(Integer.class, new GsonEmptyStringToNumber.EmptyStringToNumberTypeAdapter())
+                    .registerTypeAdapter(long.class, new GsonEmptyStringToNumber.EmptyStringToLongTypeAdapter())
+                    .registerTypeAdapter(Long.class, new GsonEmptyStringToNumber.EmptyStringToLongTypeAdapter())
+                    .registerTypeAdapter(double.class, new GsonEmptyStringToNumber.EmptyStringToDoubleTypeAdapter())
+                    .registerTypeAdapter(Double.class, new GsonEmptyStringToNumber.EmptyStringToDoubleTypeAdapter())
+                    .create();
             result = gson.fromJson(strJsonData, classOfT);
         } catch (JsonIOException | JsonSyntaxException e) {
             System.out.println(e.getMessage());
@@ -268,23 +267,23 @@ public class FunctionCommon {
             return null;
         }
         List<String> listParameter = new ArrayList<>();
-        String strSqlSub = strSql.replaceAll("\\s+"," ");
-        while (true) {            
+        String strSqlSub = strSql.replaceAll("\\s+", " ");
+        while (true) {
             int iFirstParam = strSqlSub.indexOf(':');
-            if(iFirstParam <= 0){
+            if (iFirstParam <= 0) {
                 break;
             }
             int iLast = -1;
             String strVariable = null;
             int length = strSqlSub.length();
             for (int i = iFirstParam; i < length; i++) {
-                if (' ' == strSqlSub.charAt(i)|| ',' == strSqlSub.charAt(i)|| ')' == strSqlSub.charAt(i) || '%' == strSqlSub.charAt(i)) {
-                    strVariable = strSqlSub.substring(iFirstParam,i);
+                if (' ' == strSqlSub.charAt(i) || ',' == strSqlSub.charAt(i) || ')' == strSqlSub.charAt(i) || '%' == strSqlSub.charAt(i)) {
+                    strVariable = strSqlSub.substring(iFirstParam, i);
                     String strParams = strVariable.replace(":", "").trim();
                     listParameter.add(strParams);
                     iLast = i;
                     break;
-                }else if (i == (strSqlSub.length()-1)) {
+                } else if (i == (strSqlSub.length() - 1)) {
                     strVariable = strSqlSub.substring(iFirstParam);
                     String strParams = strVariable.replace(":", "").trim();
                     listParameter.add(strParams);
@@ -298,7 +297,7 @@ public class FunctionCommon {
         }
         return listParameter;
     }
-    
+
     public static String camelcasify(String in) {
         StringBuilder sb = new StringBuilder();
         boolean capitalizeNext = false;
@@ -316,11 +315,12 @@ public class FunctionCommon {
         }
         return sb.toString();
     }
-    
+
     /**
      * lay danh sach params tu url
+     *
      * @param urlParams
-     * @return 
+     * @return
      */
     public static List<String> getListParamsFromUrl(String urlParams) {
         String s = urlParams;
@@ -382,5 +382,18 @@ public class FunctionCommon {
             }
         }
         return strTableRemoveDup;
+    }
+
+    public static String getPackagePath(String path) {
+        path = path.substring(path.indexOf("target/classes"));
+        return path.replaceAll("target/classes", "");
+    }
+
+    public static String getPackageName(String s) {
+        s = getPackagePath(s);
+        s = s.substring(1);
+        s = s.substring(0, s.length() - 1);
+
+        return s.replaceAll("/", ".");
     }
 }

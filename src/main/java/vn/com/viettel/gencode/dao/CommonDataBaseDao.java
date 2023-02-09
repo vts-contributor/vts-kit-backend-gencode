@@ -9,8 +9,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.entities.VariableEntity;
-import vn.com.viettel.gencode.utils.FunctionCommon;
 import vn.com.viettel.gencode.utils.Constants;
+import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.lang.reflect.Field;
 import java.sql.*;
@@ -226,7 +226,7 @@ public class CommonDataBaseDao extends BaseDataDao {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             LOGGER.error(e);
-            LOGGER.error("Loi! SQL: " +  queryString);
+            LOGGER.error("Loi! SQL: " + queryString);
         } finally {
             closeConnection();
         }
@@ -263,7 +263,7 @@ public class CommonDataBaseDao extends BaseDataDao {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             LOGGER.error(e);
-            LOGGER.error("Loi! SQL: " +  queryString);
+            LOGGER.error("Loi! SQL: " + queryString);
         } finally {
             closeConnection();
         }
@@ -305,7 +305,7 @@ public class CommonDataBaseDao extends BaseDataDao {
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
                 LOGGER.error(e);
-                LOGGER.error("Loi! SQL: " +  sqlInsert);
+                LOGGER.error("Loi! SQL: " + sqlInsert);
                 valueResult = false;
             } finally {
                 closeConnection();
@@ -518,7 +518,6 @@ public class CommonDataBaseDao extends BaseDataDao {
     }
 
     /**
-     *
      * @param queryString
      * @return
      */
@@ -609,7 +608,7 @@ public class CommonDataBaseDao extends BaseDataDao {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             LOGGER.error(e);
-            LOGGER.error("Loi! SQL: " +  queryString);
+            LOGGER.error("Loi! SQL: " + queryString);
         }
         return null;
     }
@@ -622,11 +621,11 @@ public class CommonDataBaseDao extends BaseDataDao {
      */
     public List<String> getListTableAll() {
         List<String> listTable = new ArrayList<>();
-        if (getDatabaseName().contains("mariadb")) {
+        if (getDatabaseName().contains("mariadb") || getDatabaseName().contains("postgresql")) {
             try {
                 this.conn = openConnection();
                 DatabaseMetaData dbmd = this.conn.getMetaData();
-                String[] types = { "TABLE" };
+                String[] types = {"TABLE"};
                 ResultSet rs = dbmd.getTables(null, null, "%", types);
                 while (rs.next()) {
                     listTable.add(rs.getString("TABLE_NAME"));
@@ -688,7 +687,7 @@ public class CommonDataBaseDao extends BaseDataDao {
             conn = openConnection();
             DatabaseMetaData metaData = conn.getMetaData();
 
-            ResultSet rs = metaData.getPrimaryKeys(null, null, tableName);
+            ResultSet rs = metaData.getPrimaryKeys(null, null, tableName.toLowerCase());
             //Printing the column name and size
             while (rs.next()) {
 //                LOGGER.info("Table name: " + rs.getString("TABLE_NAME"));
@@ -709,6 +708,9 @@ public class CommonDataBaseDao extends BaseDataDao {
             String driverName = props.getProperty("spring.datasource.driver-class-name");
             if (driverName.contains("mariadb")) {
                 return "mariadb";
+            }
+            if (driverName.contains("postgresql")) {
+                return "postgresql";
             }
         }
         return "oracle";
