@@ -621,7 +621,7 @@ public class CommonDataBaseDao extends BaseDataDao {
      */
     public List<String> getListTableAll() {
         List<String> listTable = new ArrayList<>();
-        if (getDatabaseName().contains("mariadb") || getDatabaseName().contains("postgresql")) {
+        if (getDatabaseName().contains("mysql") || getDatabaseName().contains("mariadb") || getDatabaseName().contains("postgresql")) {
             try {
                 this.conn = openConnection();
                 DatabaseMetaData dbmd = this.conn.getMetaData();
@@ -711,6 +711,9 @@ public class CommonDataBaseDao extends BaseDataDao {
             }
             if (driverName.contains("postgresql")) {
                 return "postgresql";
+            }
+            if (driverName.contains("mysql")) {
+                return "mysql";
             }
         }
         return "oracle";

@@ -142,7 +142,7 @@ public class GenEntity {
             if (isPrimaryKey) {
                 String strSeqName = stringTableName.toUpperCase().trim();
                 strContentCodeAction.append("    @Id").append("\r");
-                strContentCodeAction.append("    @GeneratedValue(generator = \"").append(strSeqName).append("_SEQ\")").append("\r");
+                strContentCodeAction.append("    @GeneratedValue(generator = \"").append(strSeqName).append("_SEQ\"").append(", strategy = GenerationType.AUTO)").append("\r");
                 strContentCodeAction.append("    @SequenceGenerator(name = \"").append(strSeqName).append("_SEQ\", sequenceName = \"").append(strSeqName).append("_SEQ\", allocationSize = 1)").append("\r");
                 strContentCodeAction.append("    @Basic(optional = false)").append("\r");
                 strContentCodeAction.append("    @NotNull").append("\r");

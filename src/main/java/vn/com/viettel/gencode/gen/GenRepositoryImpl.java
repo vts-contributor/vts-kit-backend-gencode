@@ -111,6 +111,19 @@ public class GenRepositoryImpl {
         return strContentCodeAction;
     }
 
+    private static boolean checkLikeParam(String s, String param) {
+        String[] strings = s.split(" ");
+        for (int i = 0; i < strings.length; i++) {
+            if (strings[i].toLowerCase().contains("like")) {
+                if (strings[i + 1].contains(param))
+                    return true;
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * thuc hien gen code method in Dao
      *
@@ -132,24 +145,33 @@ public class GenRepositoryImpl {
         strContentCodeAction.append("     */").append("\r");
         //noi dung phuong thuc
         strContentCodeAction.append("    @Override").append("\r");
+
         if (method.getCount() != null && method.getCount() == 1) {
             strContentCodeAction.append("    public BaseResultSelect").append(" ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO).append(") {").append("\r");
         } else {
             strContentCodeAction.append("    public List<").append(strClassDTO).append(">").append(" ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO).append(") {").append("\r");
         }
         strContentCodeAction.append("        StringBuilder sql = new StringBuilder();").append("\r");
-        strContentCodeAction.append("        sql.append(\"").append(method.getSql()).append("\");").append("\r");
+        strContentCodeAction.append("        sql.append(\"").append(method.getSql().contains("%") ? method.getSql().replaceAll("%", "") : method.getSql()).append("\");").append("\r");
         //kiem tra cau lenh sql xem co params khong
         List<String> listParamsSql = FunctionCommon.getListParamsSql(method.getSql());
+
         if (listParamsSql != null && listParamsSql.size() > 0) {
             strContentCodeAction.append("        HashMap<String, Object> hmapParams = new HashMap<>();").append("\r");
             for (String stringItemParams : listParamsSql) {
                 strContentCodeAction.append("        hmapParams.put(\"");
                 strContentCodeAction.append(stringItemParams);
-                strContentCodeAction.append("\", ").append(strVariableClassDTO).append(".get");
-                String strMethod = Character.toUpperCase(stringItemParams.charAt(0)) + FunctionCommon.camelcasify(stringItemParams.substring(1));
-                strContentCodeAction.append(strMethod);
-                strContentCodeAction.append("());").append("\r");
+                if (checkLikeParam(method.getSql(), stringItemParams)) {
+                    strContentCodeAction.append("\", ").append("\"%").append("\"+").append(strVariableClassDTO).append(".get");
+                    String strMethod = Character.toUpperCase(stringItemParams.charAt(0)) + FunctionCommon.camelcasify(stringItemParams.substring(1));
+                    strContentCodeAction.append(strMethod);
+                    strContentCodeAction.append("()+\"%\");").append("\r");
+                }else{
+                    strContentCodeAction.append("\", ").append(strVariableClassDTO).append(".get");
+                    String strMethod = Character.toUpperCase(stringItemParams.charAt(0)) + FunctionCommon.camelcasify(stringItemParams.substring(1));
+                    strContentCodeAction.append(strMethod);
+                    strContentCodeAction.append("());").append("\r");
+                }
             }
         } else {
             strContentCodeAction.append("        HashMap<String, Object> hmapParams = new HashMap<>();").append("\r");
