@@ -3,6 +3,7 @@ package vn.com.viettel.gencode.gen;
 import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.entities.MethodEntity;
 import vn.com.viettel.gencode.entities.ObjectEntity;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
@@ -24,16 +25,16 @@ public class GenRepositoryImpl {
             //thuc hien gen class
             if (itemObject != null) {
                 String strClassRepositoryImpl = itemObject.getClassName() + "RepositoryImpl";
-                String pathFileRepository = FunctionCommon.getPropertiesValue("src.url.create.code")
-                        + File.separator + "src"
-                        + File.separator + "main"
-                        + File.separator + "java"
-                        + File.separator + "vn"
-                        + File.separator + "com"
-                        + File.separator + "viettel"
-                        + File.separator + "repositories"
-                        + File.separator + "impl"
-                        + File.separator + strClassRepositoryImpl + ".java";
+                String pathFileRepository = new StringBuilder().
+                        append("src/main/java").
+                        append(Constants.PACKAGE_NAME_PATH).
+                        append("repositories").
+                        append("/").
+                        append("impl").
+                        append("/").
+                        append(strClassRepositoryImpl).
+                        append(".java").toString();
+
                 File file = new File(pathFileRepository);
                 if (file.exists()) {
                     //thuc hien add them code khi da ton tai file code
@@ -78,9 +79,9 @@ public class GenRepositoryImpl {
 
         // File RepositoryImpl
         //==============chen header import======================================
-        strContentCodeAction.append("package vn.com.viettel.repositories.impl;").append("\r\r");
-        strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
-        strContentCodeAction.append("import vn.com.viettel.repositories.").append(strClassRepository).append(";\r");
+        strContentCodeAction.append("package ").append(Constants.PACKAGE_NAME).append(".repositories.impl;").append("\r\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".dto.").append(strClassDTO).append(";\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".repositories.").append(strClassRepository).append(";\r");
         strContentCodeAction.append("import vn.com.viettel.core.repositories.impl.BaseRepositoryImpl;").append("\r");
         strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;").append("\r");
         strContentCodeAction.append("import java.util.ArrayList;").append("\r");
@@ -110,6 +111,19 @@ public class GenRepositoryImpl {
         return strContentCodeAction;
     }
 
+    private static boolean checkLikeParam(String s, String param) {
+        String[] strings = s.split(" ");
+        for (int i = 0; i < strings.length; i++) {
+            if (strings[i].toLowerCase().contains("like")) {
+                if (strings[i + 1].contains(param))
+                    return true;
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * thuc hien gen code method in Dao
      *
@@ -131,24 +145,33 @@ public class GenRepositoryImpl {
         strContentCodeAction.append("     */").append("\r");
         //noi dung phuong thuc
         strContentCodeAction.append("    @Override").append("\r");
+
         if (method.getCount() != null && method.getCount() == 1) {
             strContentCodeAction.append("    public BaseResultSelect").append(" ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO).append(") {").append("\r");
         } else {
             strContentCodeAction.append("    public List<").append(strClassDTO).append(">").append(" ").append(method.getName()).append("(").append(strClassDTO).append(" ").append(strVariableClassDTO).append(") {").append("\r");
         }
         strContentCodeAction.append("        StringBuilder sql = new StringBuilder();").append("\r");
-        strContentCodeAction.append("        sql.append(\"").append(method.getSql()).append("\");").append("\r");
+        strContentCodeAction.append("        sql.append(\"").append(method.getSql().contains("%") ? method.getSql().replaceAll("%", "") : method.getSql()).append("\");").append("\r");
         //kiem tra cau lenh sql xem co params khong
         List<String> listParamsSql = FunctionCommon.getListParamsSql(method.getSql());
+
         if (listParamsSql != null && listParamsSql.size() > 0) {
             strContentCodeAction.append("        HashMap<String, Object> hmapParams = new HashMap<>();").append("\r");
             for (String stringItemParams : listParamsSql) {
                 strContentCodeAction.append("        hmapParams.put(\"");
                 strContentCodeAction.append(stringItemParams);
-                strContentCodeAction.append("\", ").append(strVariableClassDTO).append(".get");
-                String strMethod = Character.toUpperCase(stringItemParams.charAt(0)) + FunctionCommon.camelcasify(stringItemParams.substring(1));
-                strContentCodeAction.append(strMethod);
-                strContentCodeAction.append("());").append("\r");
+                if (checkLikeParam(method.getSql(), stringItemParams)) {
+                    strContentCodeAction.append("\", ").append("\"%").append("\"+").append(strVariableClassDTO).append(".get");
+                    String strMethod = Character.toUpperCase(stringItemParams.charAt(0)) + FunctionCommon.camelcasify(stringItemParams.substring(1));
+                    strContentCodeAction.append(strMethod);
+                    strContentCodeAction.append("()+\"%\");").append("\r");
+                }else{
+                    strContentCodeAction.append("\", ").append(strVariableClassDTO).append(".get");
+                    String strMethod = Character.toUpperCase(stringItemParams.charAt(0)) + FunctionCommon.camelcasify(stringItemParams.substring(1));
+                    strContentCodeAction.append(strMethod);
+                    strContentCodeAction.append("());").append("\r");
+                }
             }
         } else {
             strContentCodeAction.append("        HashMap<String, Object> hmapParams = new HashMap<>();").append("\r");

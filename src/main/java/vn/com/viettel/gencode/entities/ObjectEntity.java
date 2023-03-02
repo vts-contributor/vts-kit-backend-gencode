@@ -6,7 +6,6 @@
 package vn.com.viettel.gencode.entities;
 
 import lombok.Data;
-import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.util.List;
 

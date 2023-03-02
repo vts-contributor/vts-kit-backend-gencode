@@ -3,14 +3,17 @@ package vn.com.viettel.gencode.gen;
 import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.entities.MethodEntity;
 import vn.com.viettel.gencode.entities.ObjectEntity;
+import vn.com.viettel.gencode.entities.VariableEntity;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static vn.com.viettel.gencode.gen.GenEntity.getListVariableFromSql;
 
 /**
  * Gen class Controller
@@ -23,16 +26,16 @@ public class GenController {
         try {
             if (itemObject != null) {
                 String strClassController = itemObject.getClassName() + "Controller";
-                String pathFileController = FunctionCommon.getPropertiesValue("src.url.create.code")
-                        + File.separator + "src"
-                        + File.separator + "main"
-                        + File.separator + "java"
-                        + File.separator + "vn"
-                        + File.separator + "com"
-                        + File.separator + "viettel"
-                        + File.separator + "controllers"
-                        + File.separator + strClassController + ".java";
+                String pathFileController = new StringBuilder().
+                        append("src/main/java").
+                        append(Constants.PACKAGE_NAME_PATH).
+                        append("controllers").
+                        append("/").
+                        append(strClassController).
+                        append(".java").toString();
+
                 File file = new File(pathFileController);
+
                 if (file.exists()) {
                     // File da ton tai thi check xem thieu variale nao se tien hanh them vao cuoi file
                     StringBuilder strString = new StringBuilder();
@@ -72,13 +75,13 @@ public class GenController {
 
         // File Controller
         //==============chen header import======================================
-        strContentCodeAction.append("package vn.com.viettel.controllers;").append("\r\r");
-        strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
-        strContentCodeAction.append("import vn.com.viettel.services.").append(strClassService).append(";\r");
+        strContentCodeAction.append("package ").append(Constants.PACKAGE_NAME).append(".controllers;").append("\r\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".dto.").append(strClassDTO).append(";\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".services.").append(strClassService).append(";\r");
         if (listTableName != null && !listTableName.isEmpty()) {
             for (String varTableName : listTableName) {
                 String strClassServiceJPA = FunctionCommon.camelcasify(Character.toUpperCase(varTableName.charAt(0)) + varTableName.substring(1)) + "ServiceJPA";
-                strContentCodeAction.append("import vn.com.viettel.services.jpa.").append(strClassServiceJPA).append(";\r");
+                strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".services.jpa.").append(strClassServiceJPA).append(";\r");
             }
         }
         strContentCodeAction.append("import lombok.RequiredArgsConstructor;").append("\r");
@@ -86,8 +89,8 @@ public class GenController {
         strContentCodeAction.append("import org.springframework.security.core.Authentication;").append("\r");
         strContentCodeAction.append("import org.springframework.http.ResponseEntity;").append("\r");
         strContentCodeAction.append("import org.springframework.web.bind.annotation.*;").append("\r");
-        strContentCodeAction.append("import vn.com.viettel.utils.Constants;").append("\r");
-        strContentCodeAction.append("import vn.com.viettel.utils.ResponseUtils;").append("\r\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".utils.Constants;").append("\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".utils.ResponseUtils;").append("\r\r");
 
         //thuc hien gen comment
         strContentCodeAction.append("/**").append("\r");
@@ -104,31 +107,43 @@ public class GenController {
         strContentCodeAction.append("public class ").append(strClassController).append(" {").append("\r");
 
         //thuc hien gen method trong khai bao
-        boolean isFirst = true;
+        Map<String, String> checkMap = new HashMap<>();
+        List<String> classServiceList = new ArrayList<>();
         for (MethodEntity method : itemObject.getListMethod()) {
             if (method.getJpa() != null && method.getJpa()) {
                 if (listTableName != null && !listTableName.isEmpty()) {
                     for (String varTableName : listTableName) {
                         String strClassServiceJPA = FunctionCommon.camelcasify(Character.toUpperCase(varTableName.charAt(0)) + varTableName.substring(1)) + "ServiceJPA";
                         String variableServiceJPA = Character.toLowerCase(strClassServiceJPA.charAt(0)) + strClassServiceJPA.substring(1);
-                        if (isFirst) {
+                        if (!checkMap.containsKey(strClassServiceJPA)) {
                             strContentCodeAction.append("    private final ").append(strClassServiceJPA).append(" ").append(variableServiceJPA).append(";\r");
-                            isFirst = false;
+                            checkMap.put(strClassServiceJPA, strClassServiceJPA);
                         }
-                        strContentCodeAction.append(generateFunctionController(strClassDTO, strClassServiceJPA, method));
+                        classServiceList.add(strClassServiceJPA);
                     }
                 }
             } else {
                 String variableService = Character.toLowerCase(strClassService.charAt(0)) + strClassService.substring(1);
-                if (isFirst) {
+                if (!checkMap.containsKey(strClassService)) {
                     strContentCodeAction.append("    private final ").append(strClassService).append(" ").append(variableService).append(";\r");
-                    isFirst = false;
+                    checkMap.put(strClassService, strClassService);
                 }
-                strContentCodeAction.append(generateFunctionController(strClassDTO, strClassService, method));
+                classServiceList.add(strClassService);
             }
+        }
+        for (int i = 0; i < itemObject.getListMethod().size(); i++) {
+            strContentCodeAction.append(generateFunctionController(strClassDTO, classServiceList.get(i), itemObject.getListMethod().get(i), itemObject));
         }
         strContentCodeAction.append("\n}");
         return strContentCodeAction;
+    }
+
+    public static String cleanString(String s, String characterReplace) {
+        s = s.replaceAll("[^\\w\\s]", "");
+        s = s.toLowerCase().trim();
+        s = s.replaceAll(" ", characterReplace);
+
+        return s;
     }
 
     /**
@@ -137,7 +152,7 @@ public class GenController {
      * @param strMethodName
      * @return
      */
-    public static StringBuilder generateFunctionController(String strClassDTO, String serviceClass, MethodEntity strMethodName) {
+    public static StringBuilder generateFunctionController(String strClassDTO, String serviceClass, MethodEntity strMethodName, ObjectEntity itemObject) {
         String variableService = Character.toLowerCase(serviceClass.charAt(0)) + serviceClass.substring(1);
         String strVariableClassDTO = Character.toLowerCase(strClassDTO.charAt(0)) + FunctionCommon.camelcasify(strClassDTO.substring(1));
         StringBuilder strContentCodeAction = new StringBuilder();
@@ -159,13 +174,35 @@ public class GenController {
         StringBuilder strParams = new StringBuilder();
         if (strMethodName.getValue() != null && strMethodName.getValue().trim().length() > 0) {
             listParams = FunctionCommon.getListParamsFromUrl(strMethodName.getValue());
+
+            Map<String, String> paramAndType = new HashMap<>();
+            if (itemObject != null) {
+                //thuc hien kiem tra trong cau sql lay ra danh sach bang
+                List<String> listTableName = FunctionCommon.getListTableFromSql(itemObject);
+//                String tableName = "";
+//                for (String stringTableName : listTableName) {
+////                    List<VariableEntity> listVariable = getListVariableFromSql(stringTableName);
+//                    if (stringTableName.contains(strClassDTO.replace("DTO", "").toLowerCase())) {
+//                        tableName += listTableName;
+//                        break;
+//                    }
+//                }
+                List<VariableEntity> listVariable = getListVariableFromSql(listTableName.get(0));
+                for (VariableEntity variableEntity : listVariable) {
+                    paramAndType.put(cleanString(variableEntity.getColumnName(), "").toLowerCase(), variableEntity.getTypeVariable());
+                }
+
+            }
+
             for (String itemParams : listParams) {
                 if (itemParams != null && itemParams.trim().length() > 0) {
-                    if (itemParams.toLowerCase().endsWith("id")) {
-                        strParams.append("@PathVariable Integer ").append(itemParams);
-                    } else {
-                        strParams.append("@PathVariable String ").append(itemParams);
-                    }
+//                    if (itemParams.toLowerCase().endsWith("id")) {
+//                        strParams.append("@PathVariable Integer ").append(itemParams);
+//                    } else {
+//                        strParams.append("@PathVariable String ").append(itemParams);
+//                    }
+                    String type = paramAndType.get(itemParams.toLowerCase());
+                    strParams.append("@PathVariable ").append(type).append(" ").append(itemParams);
                 }
             }
         }
@@ -292,7 +329,7 @@ public class GenController {
                 String strClassService = itemObject.getClassName() + "Service";
                 String strClassDTO = itemObject.getClassName() + "DTO";
                 //Neu khong co phuong thuc trong class thi add them phuong thuc
-                strContentCodeAction.append(generateFunctionController(strClassDTO, strClassService, method)).append("\r");
+                strContentCodeAction.append(generateFunctionController(strClassDTO, strClassService, method, itemObject)).append("\r");
             }
             //kiem tra xem co du phuong thuc post get hay ko
             List<MethodEntity> listMethod = itemObject.getListMethod();

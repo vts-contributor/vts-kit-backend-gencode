@@ -4,6 +4,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.entities.ObjectEntity;
 import vn.com.viettel.gencode.gen.*;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
@@ -19,8 +20,15 @@ public class GenCodeApplication {
     public static void main(String[] args) {
         BasicConfigurator.configure();
         try {
-            String strPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator;
-            Reader reader = Files.newBufferedReader(Paths.get(strPath + "template.json"));
+            Constants.PACKAGE_NAME_PATH = FunctionCommon.getPackagePath(args[0]);
+            Constants.PACKAGE_NAME = FunctionCommon.getPackageName(args[0]);
+            String strPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + args[1];
+            File f = new File(strPath);
+            if (!f.exists()) {
+                System.out.println(args[1] +" File is not exists");
+                return;
+            }
+            Reader reader = Files.newBufferedReader(Paths.get(strPath ));
             ObjectEntity itemObject = (ObjectEntity) FunctionCommon.convertJsonToObject(reader, ObjectEntity.class);
             reader.close();
 

@@ -3,6 +3,7 @@ package vn.com.viettel.gencode.gen;
 import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.entities.MethodEntity;
 import vn.com.viettel.gencode.entities.ObjectEntity;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
@@ -10,7 +11,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Gen class Service
@@ -24,15 +24,14 @@ public class GenService {
             //thuc hien gen class
             if (itemObject != null) {
                 String strClassService = itemObject.getClassName() + "Service";
-                String pathFileService = FunctionCommon.getPropertiesValue("src.url.create.code")
-                        + File.separator + "src"
-                        + File.separator + "main"
-                        + File.separator + "java"
-                        + File.separator + "vn"
-                        + File.separator + "com"
-                        + File.separator + "viettel"
-                        + File.separator + "services"
-                        + File.separator + strClassService + ".java";
+                String pathFileService = new StringBuilder().
+                        append("src/main/java").
+                        append(Constants.PACKAGE_NAME_PATH).
+                        append("services").
+                        append("/").
+                        append(strClassService).
+                        append(".java").toString();
+
                 File file = new File(pathFileService);
                 if (file.exists()) {
                     //thuc hien add them code khi da ton tai file code
@@ -69,8 +68,8 @@ public class GenService {
 
         // File Service
         //==============chen header import======================================
-        strContentCodeAction.append("package vn.com.viettel.services;").append("\r\r");
-        strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r\r");
+        strContentCodeAction.append("package ").append(Constants.PACKAGE_NAME).append(".services;").append("\r\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".dto.").append(strClassDTO).append(";\r\r");
 
         //thuc hien gen comment
         strContentCodeAction.append("/**").append("\r");

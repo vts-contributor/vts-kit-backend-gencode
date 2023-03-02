@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.entities.MethodEntity;
 import vn.com.viettel.gencode.entities.ObjectEntity;
 import vn.com.viettel.gencode.entities.VariableEntity;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
@@ -46,16 +47,15 @@ public class GenServiceJPA {
         try {
             String classTableService = Character.toUpperCase(stringTableName.charAt(0)) + FunctionCommon.camelcasify(stringTableName.substring(1));
             String strClassServiceJPA = classTableService + "ServiceJPA";
-            String pathFileServiceJPA = FunctionCommon.getPropertiesValue("src.url.create.code")
-                    + File.separator + "src"
-                    + File.separator + "main"
-                    + File.separator + "java"
-                    + File.separator + "vn"
-                    + File.separator + "com"
-                    + File.separator + "viettel"
-                    + File.separator + "services"
-                    + File.separator + "jpa"
-                    + File.separator + strClassServiceJPA + ".java";
+            String pathFileServiceJPA = new StringBuilder().
+                    append("src/main/java").
+                    append(Constants.PACKAGE_NAME_PATH).
+                    append("services").
+                    append("/").
+                    append("jpa").
+                    append("/").
+                    append(strClassServiceJPA).
+                    append(".java").toString();
             File file = new File(pathFileServiceJPA);
             if (file.exists()) {
                 return;
@@ -86,11 +86,11 @@ public class GenServiceJPA {
 
         // File ServiceJPA
         //==============chen header import======================================
-        strContentCodeAction.append("package vn.com.viettel.services.jpa;").append("\r\r");
+        strContentCodeAction.append("package ").append(Constants.PACKAGE_NAME).append(".services.jpa;").append("\r\r");
         strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;\r");
-        strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTO).append(";\r");
-        strContentCodeAction.append("import vn.com.viettel.entities.").append(strClassEntity).append(";\r");
-        strContentCodeAction.append("import vn.com.viettel.repositories.jpa.").append(strClassRepository).append(";\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".dto.").append(strClassDTO).append(";\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".entities.").append(strClassEntity).append(";\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".repositories.jpa.").append(strClassRepository).append(";\r");
         strContentCodeAction.append("import java.util.List;").append("\r");
         strContentCodeAction.append("import java.util.Optional;").append("\r");
         strContentCodeAction.append("import lombok.AllArgsConstructor;").append("\r");
@@ -161,6 +161,7 @@ public class GenServiceJPA {
 
     /**
      * Gen service JPA
+     *
      * @param variableEntities
      * @param method
      * @param strClassDTO
@@ -186,7 +187,13 @@ public class GenServiceJPA {
                 strContentCodeAction.append("        } else {\r");
                 strContentCodeAction.append("           pageable = PageRequest.of (0, 10);\r");
                 strContentCodeAction.append("        }\r");
-                strContentCodeAction.append("        Page<").append(strClassEntity).append("> page = ").append(strTableNameCamel).append(".").append(method.getName()).append("(").append(varClassDTO).append(", pageable);").append("\r");
+
+                if (sqlCommand.contains("where")) {
+                    strContentCodeAction.append("        Page<").append(strClassEntity).append("> page = ").append(strTableNameCamel).append(".").append(method.getName()).append("(").append(varClassDTO).append(", pageable);").append("\r");
+                } else {
+                    strContentCodeAction.append("        Page<").append(strClassEntity).append("> page = ").append(strTableNameCamel).append(".").append(method.getName()).append("(").append("pageable);").append("\r");
+                }
+
                 if (method.getCount() != null && method.getCount() == 1) {
                     strContentCodeAction.append("        return new BaseResultSelect(page.getContent(), page.getTotalElements());\r");
                 } else {

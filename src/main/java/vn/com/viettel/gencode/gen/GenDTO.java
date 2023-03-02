@@ -5,6 +5,7 @@ import vn.com.viettel.gencode.dao.CommonDataBaseDao;
 import vn.com.viettel.gencode.entities.MethodEntity;
 import vn.com.viettel.gencode.entities.ObjectEntity;
 import vn.com.viettel.gencode.entities.VariableEntity;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
@@ -26,15 +27,14 @@ public class GenDTO {
         try {
             if (itemObject != null) {
                 String strClassDTO = itemObject.getClassName() + "DTO";
-                String pathFileDTO = FunctionCommon.getPropertiesValue("src.url.create.code")
-                        + File.separator + "src"
-                        + File.separator + "main"
-                        + File.separator + "java"
-                        + File.separator + "vn"
-                        + File.separator + "com"
-                        + File.separator + "viettel"
-                        + File.separator + "dto"
-                        + File.separator + strClassDTO + ".java";
+                String pathFileDTO = new StringBuilder().
+                        append("src/main/java").
+                        append(Constants.PACKAGE_NAME_PATH).
+                        append("dto").
+                        append("/").
+                        append(strClassDTO).
+                        append(".java").toString();
+
                 File file = new File(pathFileDTO);
                 if (file.exists()) {
                     // File da ton tai thi tien hanh add them variable vao cuoi file
@@ -74,7 +74,7 @@ public class GenDTO {
 
         // File DTO
         //==============chen header import======================================
-        strContentCodeAction.append("package vn.com.viettel.dto;").append("\r\r");
+        strContentCodeAction.append("package ").append(Constants.PACKAGE_NAME).append(".dto;").append("\r\r");
         strContentCodeAction.append("import com.fasterxml.jackson.annotation.JsonInclude;").append("\r");
         strContentCodeAction.append("import com.fasterxml.jackson.annotation.JsonInclude.Include;").append("\r");
         strContentCodeAction.append("import java.util.Date;").append("\r");

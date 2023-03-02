@@ -3,6 +3,7 @@ package vn.com.viettel.gencode.gen;
 import org.apache.log4j.Logger;
 import vn.com.viettel.gencode.entities.MethodEntity;
 import vn.com.viettel.gencode.entities.ObjectEntity;
+import vn.com.viettel.gencode.utils.Constants;
 import vn.com.viettel.gencode.utils.FunctionCommon;
 
 import java.io.File;
@@ -23,15 +24,14 @@ public class GenRepository {
             //thuc hien gen class
             if (itemObject != null) {
                 String strClassRepository = itemObject.getClassName() + "Repository";
-                String pathFileRepository = FunctionCommon.getPropertiesValue("src.url.create.code")
-                        + File.separator + "src"
-                        + File.separator + "main"
-                        + File.separator + "java"
-                        + File.separator + "vn"
-                        + File.separator + "com"
-                        + File.separator + "viettel"
-                        + File.separator + "repositories"
-                        + File.separator + strClassRepository + ".java";
+                String pathFileRepository = new StringBuilder().
+                        append("src/main/java").
+                        append(Constants.PACKAGE_NAME_PATH).
+                        append("repositories").
+                        append("/").
+                        append(strClassRepository).
+                        append(".java").toString();
+
                 File file = new File(pathFileRepository);
                 if (file.exists()) {
                     //file da ton tai thi tien hanh add them variable vao cuoi file
@@ -74,8 +74,8 @@ public class GenRepository {
 
         // File Repository
         //==============chen header import======================================
-        strContentCodeAction.append("package vn.com.viettel.repositories;").append("\r\r");
-        strContentCodeAction.append("import vn.com.viettel.dto.").append(strClassDTOEntity).append(";\r");
+        strContentCodeAction.append("package ").append(Constants.PACKAGE_NAME).append(".repositories;").append("\r\r");
+        strContentCodeAction.append("import ").append(Constants.PACKAGE_NAME).append(".dto.").append(strClassDTOEntity).append(";\r");
         strContentCodeAction.append("import java.util.List;").append("\r");
         strContentCodeAction.append("import vn.com.viettel.core.dto.BaseResultSelect;").append("\r\r");
 
